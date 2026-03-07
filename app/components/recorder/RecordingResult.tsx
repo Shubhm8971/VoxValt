@@ -2,7 +2,9 @@
 'use client';
 
 import { useState } from 'react';
-import type { ProcessingResult, ExtractedItem } from '../VoiceRecorder';
+
+type ProcessingResult = any;  // Placeholder type
+type ExtractedItem = any;     // Placeholder type
 
 interface RecordingResultProps {
     result: ProcessingResult;
@@ -56,7 +58,7 @@ export default function RecordingResult({ result, duration, onRecordAnother, onC
             {extracted.items.length > 0 && (
                 <div className="space-y-2 mb-4">
                     <p className="text-xs font-semibold text-vox-text-secondary uppercase tracking-wider">Extracted Items</p>
-                    {extracted.items.map((item, i) => {
+                    {extracted.items.map((item: any, i: number) => {
                         const config = TYPE_CONFIG[item.type] || TYPE_CONFIG.memo;
                         return (
                             <div key={i} className={`vox-card p-3 ${config.cardClass} animate-fade-in-up`} style={{ animationDelay: `${i * 80}ms` }}>
@@ -74,7 +76,7 @@ export default function RecordingResult({ result, duration, onRecordAnother, onC
                                                     📅 {new Date(item.due_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                                                 </span>
                                             )}
-                                            {item.people_involved?.map((person, j) => (
+                                            {item.people_involved?.map((person: any, j: number) => (
                                                 <span key={j} className="text-2xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
                                                     👤 {person}
                                                 </span>
@@ -92,7 +94,7 @@ export default function RecordingResult({ result, duration, onRecordAnother, onC
             {/* Tags */}
             {extracted.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-4">
-                    {extracted.tags.map((tag, i) => (
+                    {extracted.tags.map((tag: any, i: number) => (
                         <span key={i} className="px-2.5 py-1 rounded-full text-xs font-medium bg-brand-500/10 text-brand-400 border border-brand-500/20">
                             #{tag}
                         </span>
@@ -119,7 +121,7 @@ export default function RecordingResult({ result, duration, onRecordAnother, onC
             {errors && errors.length > 0 && (
                 <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-4">
                     <p className="text-xs text-amber-400 font-medium mb-1">⚠️ Some items couldn't be saved:</p>
-                    {errors.map((err, i) => <p key={i} className="text-2xs text-amber-400/70">• {err}</p>)}
+                    {errors.map((err: any, i: number) => <p key={i} className="text-2xs text-amber-400/70">• {err}</p>)}
                 </div>
             )}
 

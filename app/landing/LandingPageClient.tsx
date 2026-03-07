@@ -10,7 +10,6 @@ import HowItWorks from './components/HowItWorks';
 import UseCases from './components/UseCases';
 import Features from './components/Features';
 import Pricing from './components/Pricing';
-import Testimonials from './components/Testimonials';
 import FAQ from './components/FAQ';
 import CTA from './components/CTA';
 import Footer from './components/Footer';
@@ -25,7 +24,6 @@ export default function LandingPageClient() {
             <UseCases />
             <Features />
             <Pricing />
-            <Testimonials />
             <FAQ />
             <CTA />
             <Footer />

@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: { teamId: string } }
+    { params }: { params: Promise<{ teamId: string }> }
 ) {
     try {
         const supabase = await createServerSupabaseClient();
@@ -14,7 +14,7 @@ export async function POST(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { teamId } = params;
+        const { teamId } = await params;
 
         // 1. Check if user is the owner (Owner cannot leave, must disband or transfer)
         const { data: team, error: teamError } = await supabase

@@ -2,7 +2,8 @@
 'use client';
 
 import { Mic, Square, Pause, Play } from 'lucide-react';
-import type { RecorderStatus } from '../VoiceRecorder';
+
+type RecorderStatus = 'idle' | 'recording' | 'paused';
 
 interface RecordButtonProps {
     status: RecorderStatus;
@@ -63,9 +64,7 @@ export default function RecordButton({
                         ? 'bg-rose-500 text-white'
                         : isPaused
                             ? 'bg-amber-400 text-white'
-                            : status === 'requesting'
-                                ? 'bg-brand-100 text-brand-500'
-                                : 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95'
+                            : 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95'
                     }
                 `}
                 style={{
@@ -76,9 +75,7 @@ export default function RecordButton({
                 }}
                 aria-label={isActive ? 'Stop recording' : 'Start recording'}
             >
-                {status === 'requesting' ? (
-                    <div className="w-8 h-8 rounded-full border-3 border-current border-t-transparent animate-spin" />
-                ) : isRecording ? (
+                {isRecording ? (
                     <Square className="w-8 h-8 fill-current animate-in zoom-in duration-200" />
                 ) : isPaused ? (
                     <div className="flex gap-1">
@@ -92,7 +89,6 @@ export default function RecordButton({
 
             {/* Status Text Label */}
             <div className="mt-4 font-medium text-sm transition-all duration-300 min-h-[1.5em] text-center">
-                {status === 'requesting' && <span className="text-gray-500 animate-pulse">Connecting...</span>}
                 {status === 'recording' && <span className="text-rose-500 font-semibold animate-pulse">Listening...</span>}
                 {status === 'paused' && <span className="text-amber-500">Paused</span>}
                 {status === 'idle' && <span className="text-gray-400">Tap to speak</span>}

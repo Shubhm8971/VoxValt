@@ -41,7 +41,7 @@ export default function Navbar() {
                                 <span className="text-base">🎙️</span>
                             </div>
                             <span className="text-lg font-bold text-vox-text">
-                                Vox<span className="text-brand-500">Vault</span>
+                                Vox<span className="text-brand-500">Valt</span>
                             </span>
                         </Link>
 

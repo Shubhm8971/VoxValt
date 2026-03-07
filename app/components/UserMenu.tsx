@@ -86,6 +86,23 @@ export function UserMenu({ userEmail, onLogout }: UserMenuProps) {
             style={styles.menuItem}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+            onClick={() => window.location.href = '/settings/calendar'}
+          >
+            🗓️ Calendar Sync
+          </button>
+          <button
+            style={styles.menuItem}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+            onClick={() => window.location.href = '/settings/whatsapp'}
+          >
+            💬 WhatsApp Bot
+          </button>
+          <div style={styles.menuDivider}></div>
+          <button
+            style={styles.menuItem}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
             onClick={handleLogout}
           >
             🚪 Logout

@@ -26,7 +26,7 @@ const FAQS = [
     },
     {
         q: 'Can my family share a VoxValt account?',
-        a: 'Yes! The Family plan supports up to 5 members. Each person has their own private memory vault, but you can share reminders and track promises made to each other.',
+        a: 'Yes! The Family plan supports up to 5 members. Each person has their own private memory Valtspace, but you can share reminders and track promises made to each other.',
     },
     {
         q: 'How is this different from Apple/Google Notes?',
@@ -101,7 +101,7 @@ export default function FAQ() {
                 <div className="text-center mt-10">
                     <p className="text-sm text-vox-text-muted">
                         Still have questions?{' '}
-                        <a href="mailto:support@voxvalt.com" className="text-brand-500 hover:underline font-medium">
+                        <a href="mailto:voxvalt@gmail.com" className="text-brand-500 hover:underline font-medium">
                             Email us
                         </a>
                     </p>

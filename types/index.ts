@@ -11,6 +11,7 @@ export interface Recording {
 export interface Task {
   id?: string;
   user_id?: string;
+  assigned_to?: string; // User ID this task is assigned to
   recording_id?: string;
   title: string;
   description: string;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getRecordings, saveRecording } from '@/lib/db';
 import { verifyAuth } from '@/lib/api-auth';
+import { canUserRecord } from '@/lib/subscription';
 
 // GET /api/recordings - Fetch user's recordings
 export async function GET(request: NextRequest) {
@@ -41,6 +42,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Check usage limits based on subscription
+    const { canRecord, reason } = await canUserRecord(user.id);
+    if (!canRecord) {
+      return NextResponse.json(
+        { success: false, error: reason || 'Recording limit reached based on your current plan' },
+        { status: 403 }
       );
     }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { Task } from '@/types';
-import { CheckCircle2, Circle, Trash2, Calendar, Edit2, Clock, Repeat } from 'lucide-react';
+import { CheckCircle2, Circle, Trash2, Calendar, Edit2, Clock, Repeat, User } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useState } from 'react';
 import { updateTaskStatus, updateTask, deleteTask } from '@/lib/api-client';
@@ -152,6 +152,12 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
                 {task.task_type || task.type || 'task'}
               </span>
               {task.priority && <PriorityBadge priority={task.priority} />}
+              {task.assigned_to && (
+                <div className="flex items-center gap-1 text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">
+                  <User className="w-3 h-3" />
+                  <span className="font-medium">Assigned</span>
+                </div>
+              )}
             </div>
 
             {task.description && (

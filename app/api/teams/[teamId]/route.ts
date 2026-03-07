@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { teamId: string } }
+    { params }: { params: Promise<{ teamId: string }> }
 ) {
     try {
         const supabase = await createServerSupabaseClient();
@@ -14,7 +14,7 @@ export async function GET(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { teamId } = params;
+        const { teamId } = await params;
 
         // Fetch team members with user details
         const { data, error } = await supabase
@@ -42,7 +42,7 @@ export async function GET(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { teamId: string } }
+    { params }: { params: Promise<{ teamId: string }> }
 ) {
     try {
         const supabase = await createServerSupabaseClient();
@@ -52,7 +52,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { teamId } = params;
+        const { teamId } = await params;
 
         // Only owner can delete
         const { data: team, error: teamError } = await supabase

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase'; // Client-side supabase
+import PremiumFeature from './PremiumFeature';
 
-export function CalendarSettings({ userId }: { userId: string }) {
+function CalendarSettingsContent() {
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -22,10 +23,12 @@ export function CalendarSettings({ userId }: { userId: string }) {
       // Clear params
       router.replace('/settings');
     }
-  }, [userId, searchParams]);
+  }, [searchParams]);
 
   const checkConnection = async () => {
     try {
+      // TODO: Get actual userId from auth context
+      const userId = 'demo-user-id';
       const { data, error } = await supabase
         .from('users')
         .select('google_calendar_token')
@@ -49,6 +52,8 @@ export function CalendarSettings({ userId }: { userId: string }) {
   const handleDisconnect = async () => {
     try {
       setLoading(true);
+      // TODO: Get actual userId from auth context
+      const userId = 'demo-user-id';
       const { error } = await supabase
         .from('users')
         .update({ google_calendar_token: null })
@@ -87,13 +92,23 @@ export function CalendarSettings({ userId }: { userId: string }) {
         <button
           onClick={isConnected ? handleDisconnect : handleConnect}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isConnected
-              ? 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+            ? 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+            : 'bg-blue-600 text-white hover:bg-blue-700'
             }`}
         >
           {isConnected ? 'Disconnect' : 'Connect'}
         </button>
       </div>
     </div>
+  );
+}
+
+export function CalendarSettings() {
+  return (
+    <Suspense fallback={<div className="h-20 animate-pulse bg-gray-100 rounded-xl"></div>}>
+      <PremiumFeature feature="calendar_integration">
+        <CalendarSettingsContent />
+      </PremiumFeature>
+    </Suspense>
   );
 }

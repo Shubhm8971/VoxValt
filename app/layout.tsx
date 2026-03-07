@@ -5,7 +5,7 @@ import { Suspense } from 'react'; // Added for the Briefing banner
 import ServiceWorkerInitializer from './components/ServiceWorkerInitializer';
 import OfflineIndicator from './components/OfflineIndicator';
 import MorningBriefing from './components/MorningBriefing'; // Your new component
-import { AuthProvider } from '@/lib/auth-context';
+import ClientProviders from './components/ClientProviders';
 import { ThemeProvider } from './components/ThemeProvider';
 import './globals.css';
 
@@ -184,7 +184,7 @@ export default function RootLayout({
         </a>
 
         <ThemeProvider>
-          <AuthProvider>
+          <ClientProviders>
             {/* Service Worker: PWA, notifications, offline, caching */}
             {/* <ServiceWorkerInitializer /> */}
 
@@ -198,17 +198,9 @@ export default function RootLayout({
               <MorningBriefing />
             </Suspense> */}
 
-            <div
-              id="main-content"
-              role="main"
-              className="relative min-h-screen min-h-[100dvh] flex flex-col"
-            >
-              {children}
-            </div>
-
-            <div id="toast-container" role="status" aria-live="polite" className="fixed bottom-6 left-4 right-4 z-toast flex flex-col items-center gap-2 pointer-events-none sm:bottom-8 sm:left-auto sm:right-8 sm:items-end" />
+            {children}
+          </ClientProviders>
             <div id="modal-root" />
-          </AuthProvider>
         </ThemeProvider>
 
         <script

@@ -1,10 +1,12 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
-export const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+export const razorpay = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET 
+  ? new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    })
+  : null;
 
 export const PLANS = {
   FREE: {
@@ -123,6 +125,10 @@ export interface Subscription {
 }
 
 export async function createRazorpayOrder(planId: string, userId: string) {
+  if (!razorpay) {
+    throw new Error('Razorpay not configured');
+  }
+  
   const plan = Object.values(PLANS).find(p => p.id === planId);
   if (!plan || plan.price === 0) {
     throw new Error('Invalid plan selected');
@@ -146,7 +152,11 @@ export function verifyPaymentSignature(
   paymentId: string,
   signature: string
 ): boolean {
-  const secret = process.env.RAZORPAY_KEY_SECRET!;
+  const secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!secret) {
+    return false;
+  }
+  
   const generatedSignature = crypto
     .createHmac('sha256', secret)
     .update(`${orderId}|${paymentId}`)
@@ -156,6 +166,10 @@ export function verifyPaymentSignature(
 }
 
 export async function createSubscriptionPlan(planId: string) {
+  if (!razorpay) {
+    throw new Error('Razorpay not configured');
+  }
+  
   const plan = Object.values(PLANS).find(p => p.id === planId);
   if (!plan || plan.price === 0) {
     throw new Error('Invalid plan for subscription');

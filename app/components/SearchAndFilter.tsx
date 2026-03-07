@@ -224,7 +224,7 @@ export function SearchAndFilter({ onFilterChange, showDateRange = true }: Search
               ...(filters.sortBy === 'smart' ? styles.activeFilter : {}),
               width: '100%',
               display: 'flex',
-              itemsCenter: 'center',
+              alignItems: 'center',
               justifyContent: 'center',
               gap: '0.5rem',
               border: filters.sortBy === 'smart' ? 'none' : '2px solid #e0e0e0',

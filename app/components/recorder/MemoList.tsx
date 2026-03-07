@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { format } from 'date-fns';
-import type { Memo } from '../VoiceRecorder';
+import type { Memo } from '@/types';
 
 interface MemoListProps {
     memos: Memo[];
@@ -64,22 +64,10 @@ function MemoCard({
     index: number;
     onDelete: () => void;
 }) {
-    const [expanded, setExpanded] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
 
-    const formatDuration = (seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const isLong = memo.transcript.length > 150;
-    const displayText =
-        expanded || !isLong
-            ? memo.transcript
-            : memo.transcript.substring(0, 150) + '...';
-
-    const hasTasks = memo.extractedData?.tasks && memo.extractedData.tasks.length > 0;
+    const displayText = memo.content || '';
+    const hasTasks = false; // Simplified - extractedData not in Memo type
 
     return (
         <div
@@ -110,34 +98,11 @@ function MemoCard({
                             {displayText}
                         </p>
 
-                        {isLong && (
-                            <button
-                                onClick={() => setExpanded(!expanded)}
-                                className="text-xs text-brand-500 hover:underline mt-1"
-                            >
-                                {expanded ? 'Show less' : 'Show more'}
-                            </button>
-                        )}
-
                         {/* Meta */}
                         <div className="flex items-center gap-3 mt-2 text-2xs text-vox-text-muted">
-                            <span>
-                                {memo.timestamp.toLocaleTimeString('en-IN', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                })}
-                            </span>
+                            <span>{memo.created_at}</span>
                             <span>•</span>
-                            <span>{formatDuration(memo.duration)}</span>
-                            {memo.isProcessing && (
-                                <>
-                                    <span>•</span>
-                                    <span className="flex items-center gap-1 text-brand-400">
-                                        <div className="w-2.5 h-2.5 border-[1.5px] border-brand-400 border-t-transparent rounded-full animate-spin" />
-                                        Processing
-                                    </span>
-                                </>
-                            )}
+                            <span>{memo.type}</span>
                         </div>
                     </div>
 
@@ -206,82 +171,16 @@ function MemoCard({
                 </div>
             </div>
 
-            {/* Extracted Tasks Section */}
+            {/* Extracted Tasks Section - Disabled */}
             <div
                 className={`
           px-4 py-3 border-t border-vox-border
-          ${hasTasks
-                        ? 'bg-brand-500/[0.03]'
-                        : 'bg-vox-surface/30'
-                    }
+          ${hasTasks ? 'bg-brand-500/[0.03]' : 'bg-vox-surface/30'}
         `}
             >
-                {memo.isProcessing ? (
-                    <div className="flex items-center gap-2">
-                        <div className="w-3.5 h-3.5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-                        <p className="text-xs text-vox-text-muted">
-                            Analyzing with AI...
-                        </p>
-                    </div>
-                ) : hasTasks ? (
-                    <div>
-                        <p className="text-2xs text-vox-text-muted font-medium mb-2">
-                            ✨ Extracted Items:
-                        </p>
-                        <div className="space-y-1.5">
-                            {memo.extractedData!.tasks.map((task, idx) => {
-                                const style =
-                                    TYPE_STYLES[task.type] ||
-                                    TYPE_STYLES.task;
-                                const icon =
-                                    TYPE_ICONS[task.type] || '📋';
-
-                                return (
-                                    <div
-                                        key={idx}
-                                        className="flex items-start gap-2"
-                                    >
-                                        <span className="text-sm flex-shrink-0 mt-0.5">
-                                            {icon}
-                                        </span>
-                                        <span
-                                            className={`
-                        text-2xs px-2 py-0.5 rounded-full font-medium flex-shrink-0
-                        ${style.bg} ${style.text}
-                      `}
-                                        >
-                                            {task.type}
-                                        </span>
-                                        <span className="text-xs text-vox-text-secondary flex-1">
-                                            {task.title}
-                                        </span>
-                                        {task.due_date && (
-                                            <span
-                                                className="
-                          text-2xs px-2 py-0.5 rounded-full font-medium
-                          bg-green-500/15 text-green-400
-                          whitespace-nowrap flex-shrink-0
-                        "
-                                            >
-                                                📅{' '}
-                                                {format(new Date(task.due_date), 'MMM d')}
-                                            </span>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                        {memo.extractedData!.summary && (
-                            <p className="text-2xs text-vox-text-muted mt-2 italic">
-                                💡 {memo.extractedData!.summary}
-                            </p>
-                        )}
-                    </div>
-                ) : (
-                    <p className="text-xs text-vox-text-muted">
-                        No tasks extracted from this recording
-                    </p>
-                )}
+                <p className="text-xs text-vox-text-muted">
+                    No tasks extracted from this recording
+                </p>
             </div>
         </div>
     );

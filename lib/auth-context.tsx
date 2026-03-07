@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (event: any, session: any) => {
         setSession(session);
         setUser(session?.user || null);
         setError(null);
@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
-          emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://voxvalt.vercel.app'}/auth/callback`,
         },
       });
 
@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setError(null);
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/reset-password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://voxvalt.vercel.app'}/auth/reset-password`,
       });
 
       if (error) {

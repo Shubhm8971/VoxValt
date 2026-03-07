@@ -14,6 +14,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,12 +24,21 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
         });
         if (error) throw error;
-        setMessage('Check your email for the confirmation link!');
+        
+        // If signup successful and no email confirmation required, log them in
+        if (data.user && !data.user.email_confirmed_at) {
+          setMessage('Account created! You can now log in.');
+        } else if (data.user) {
+          // Auto-login if no email confirmation needed
+          onAuthSuccess?.();
+        } else {
+          setMessage('Account created! Check your email if confirmation is required.');
+        }
         setEmail('');
         setPassword('');
       } else {
@@ -39,6 +49,31 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
         if (error) throw error;
         onAuthSuccess?.();
       }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!email) {
+      setError('Please enter your email address first');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://voxvalt.vercel.app/auth?reset=true',
+      });
+      
+      if (error) throw error;
+      setMessage('Password reset link sent! Check your email.');
+      setShowForgotPassword(false);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -189,6 +224,62 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
           >
             {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Login'}
           </button>
+
+          {!isSignUp && !showForgotPassword && (
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#667eea',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  textDecoration: 'underline'
+                }}
+              >
+                Forgot your password?
+              </button>
+            </div>
+          )}
+
+          {showForgotPassword && (
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+              <button
+                type="button"
+                onClick={handlePasswordReset}
+                disabled={loading}
+                style={{
+                  background: '#667eea',
+                  border: 'none',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.5rem',
+                  opacity: loading ? 0.7 : 1
+                }}
+              >
+                {loading ? 'Sending...' : 'Send Reset Link'}
+              </button>
+              <br />
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#666',
+                  cursor: 'pointer',
+                  fontSize: '0.8rem',
+                  marginTop: '0.5rem'
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </form>
 
         <div style={styles.toggleText}>

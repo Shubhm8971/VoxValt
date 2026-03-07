@@ -14,7 +14,7 @@ const FOOTER_LINKS = {
         { label: 'About', href: '#' },
         { label: 'Blog', href: '#' },
         { label: 'Careers', href: '#' },
-        { label: 'Contact', href: 'mailto:support@voxvalt.com' },
+        { label: 'Contact', href: 'mailto:voxvalt@gmail.com' },
     ],
     Legal: [
         { label: 'Privacy Policy', href: '/privacy' },
@@ -42,7 +42,7 @@ export default function Footer() {
                                 <span className="text-base">🎙️</span>
                             </div>
                             <span className="text-lg font-bold text-vox-text">
-                                Vox<span className="text-brand-500">Vault</span>
+                                Vox<span className="text-brand-500">Valt</span>
                             </span>
                         </Link>
                         <p className="text-sm text-vox-text-muted leading-relaxed">

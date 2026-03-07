@@ -340,7 +340,6 @@ export async function getOrCreateBoard(
 export async function getBoards(teamId: string): Promise<any[]> {
   const { data, error } = await supabase
     .from('memory_boards')
-    .from('memory_boards')
     .select('*')
     .eq('team_id', teamId)
     .order('name', { ascending: true });
@@ -349,18 +348,31 @@ export async function getBoards(teamId: string): Promise<any[]> {
   return data || [];
 }
 
-export async function getTeamAnalytics(teamId: string): Promise<any> {
-  const { data: memories, error: mError } = await supabase
+export async function getTeamAnalytics(teamId: string, userId: string): Promise<any> {
+  const plan = await getUserSubscriptionPlan(userId);
+
+  let memoriesQuery = supabase
     .from('memories')
     .select('created_at, user_id, type')
     .eq('team_id', teamId);
 
-  if (mError) throw mError;
-
-  const { data: tasks, error: tError } = await supabase
+  let tasksQuery = supabase
     .from('tasks')
     .select('completed, task_type')
     .eq('team_id', teamId);
+
+  if (!plan.isPremium) {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    memoriesQuery = memoriesQuery.gte('created_at', sevenDaysAgo.toISOString());
+    tasksQuery = tasksQuery.gte('created_at', sevenDaysAgo.toISOString());
+  }
+
+  const { data: memories, error: mError } = await memoriesQuery;
+
+  if (mError) throw mError;
+
+  const { data: tasks, error: tError } = await tasksQuery;
 
   if (tError) throw tError;
 
@@ -409,6 +421,7 @@ export async function getTeamAnalytics(teamId: string): Promise<any> {
 }
 
 export async function getReportData(userId: string, scope: 'personal' | 'team' | 'all', teamId?: string, boardId?: string): Promise<any> {
+  const plan = await getUserSubscriptionPlan(userId);
   let tasksQuery = supabase.from('tasks').select('*');
   let memoriesQuery = supabase.from('memories').select('*');
 
@@ -427,6 +440,13 @@ export async function getReportData(userId: string, scope: 'personal' | 'team' |
   if (boardId) {
     tasksQuery = tasksQuery.eq('board_id', boardId);
     memoriesQuery = memoriesQuery.eq('board_id', boardId);
+  }
+
+  if (!plan.isPremium) {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    tasksQuery = tasksQuery.gte('created_at', sevenDaysAgo.toISOString());
+    memoriesQuery = memoriesQuery.gte('created_at', sevenDaysAgo.toISOString());
   }
 
   const [{ data: tasks }, { data: memories }] = await Promise.all([

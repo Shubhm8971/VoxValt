@@ -10,6 +10,8 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  nextVitals,
+  nextTs,
 ]);
 
 export default eslintConfig;

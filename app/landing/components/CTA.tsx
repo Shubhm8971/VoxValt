@@ -21,8 +21,8 @@ export default function CTA() {
                 </h2>
 
                 <p className="text-lg text-vox-text-secondary max-w-lg mx-auto mb-10">
-                    Join 1,000+ professionals who've transformed their productivity. 
-                    Free forever plan - no credit card required.
+                    Start organizing your voice notes and never forget a commitment again. 
+                    Free forever plan available - no credit card required.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -43,20 +43,6 @@ export default function CTA() {
                 <p className="mt-6 text-sm text-vox-text-muted">
                     Free forever plan available · Upgrade anytime · Cancel anytime
                 </p>
-
-                {/* Social proof */}
-                <div className="flex items-center justify-center gap-6 mt-12 pt-8 border-t border-vox-border">
-                    {[
-                        { label: 'Voice notes processed', value: '50K+' },
-                        { label: 'Promises tracked', value: '12K+' },
-                        { label: 'Happy users', value: '2K+' },
-                    ].map((stat, i) => (
-                        <div key={i} className="text-center">
-                            <p className="text-xl sm:text-2xl font-bold text-vox-text">{stat.value}</p>
-                            <p className="text-2xs text-vox-text-muted">{stat.label}</p>
-                        </div>
-                    ))}
-                </div>
             </div>
         </section>
     );

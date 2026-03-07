@@ -15,7 +15,7 @@ export default function PricingCard({ plan, currentPlan, isAnnual = false }: Pri
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  
+
   // Get the correct plan based on annual/monthly
   const getPlanData = () => {
     if (plan === 'FREE') return PLANS.FREE;
@@ -41,47 +41,48 @@ export default function PricingCard({ plan, currentPlan, isAnnual = false }: Pri
 
   return (
     <div className={`
-      relative rounded-2xl p-8 border-2 transition-all duration-300
-      ${isPopular ? 'border-blue-500 shadow-xl scale-105' : 'border-gray-200'}
-      ${isCurrentPlan ? 'bg-gray-50' : 'bg-white'}
+      relative rounded-3xl p-8 border backdrop-blur-md transition-all duration-300 flex flex-col h-full
+      ${isPopular ? 'border-brand-500/50 shadow-glow bg-vox-surface/80 scale-105 z-10' : 'border-vox-border bg-vox-surface/40 hover:bg-vox-surface/60'}
     `}>
       {isPopular && (
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-          <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+          <span className="bg-brand-gradient text-white px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase shadow-glow-sm">
             Most Popular
           </span>
         </div>
       )}
 
-      <div className="text-center mb-8">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{planData.name}</h3>
+      <div className="text-center mb-8 pb-8 border-b border-vox-border/50">
+        <h3 className="text-xl font-bold text-vox-text mb-2 uppercase tracking-wide">{planData.name}</h3>
         <div className="flex items-baseline justify-center">
-          <span className="text-4xl font-bold text-gray-900">
+          <span className="text-4xl font-black text-vox-text tracking-tighter">
             {plan === 'FREE' ? 'Free' : `₹${planData.price / 100}`}
           </span>
           {plan !== 'FREE' && (
-            <span className="text-gray-500 ml-2">/{isAnnual ? 'year' : 'month'}</span>
+            <span className="text-vox-text-muted ml-2 text-sm font-medium">/{isAnnual ? 'year' : 'month'}</span>
           )}
         </div>
         {isAnnual && plan !== 'FREE' && (
-          <p className="text-green-600 text-sm mt-2">Save 20% vs monthly</p>
+          <p className="text-brand-400 text-xs font-bold mt-3 tracking-wider uppercase bg-brand-500/10 inline-block px-3 py-1 rounded-full border border-brand-500/20">
+            Save 20%
+          </p>
         )}
       </div>
 
-      <ul className="space-y-4 mb-8">
+      <ul className="space-y-4 mb-8 flex-1">
         {planData.features.map((feature, index) => (
-          <li key={index} className="flex items-start">
-            <svg className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          <li key={index} className="flex items-start text-sm">
+            <svg className="w-5 h-5 text-brand-400 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
             </svg>
-            <span className="text-gray-700">{feature}</span>
+            <span className="text-vox-text-secondary">{feature}</span>
           </li>
         ))}
       </ul>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-600 text-sm">{error}</p>
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+          <p className="text-red-400 text-xs font-medium">{error}</p>
         </div>
       )}
 
@@ -89,10 +90,10 @@ export default function PricingCard({ plan, currentPlan, isAnnual = false }: Pri
         <button
           disabled={isCurrentPlan}
           className={`
-            w-full py-3 px-6 rounded-lg font-semibold transition-all duration-300
+            w-full py-4 rounded-xl font-bold uppercase tracking-wider text-sm transition-all duration-300
             ${isCurrentPlan
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-gray-900 hover:bg-gray-800 text-white'
+              ? 'bg-vox-surface border border-vox-border text-vox-text-muted cursor-not-allowed'
+              : 'bg-white text-slate-900 hover:bg-slate-200 shadow-elevated hover:shadow-glow'
             }
           `}
         >

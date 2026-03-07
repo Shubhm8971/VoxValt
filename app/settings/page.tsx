@@ -1,7 +1,10 @@
-import { CalendarSettings } from '../components/CalendarSettings';
+'use client';
 
+import { CalendarSettings } from '../components/CalendarSettings';
 import { useTheme } from 'next-themes';
 import { Moon, Sun } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
 
 export default function SettingsPage() {
   const userId = 'user-id-placeholder'; // This should come from auth
@@ -33,7 +36,7 @@ export default function SettingsPage() {
 
       <div className="mb-8">
         <h2 className="text-lg font-semibold mb-4">Integrations</h2>
-        <CalendarSettings userId={userId} />
+        <CalendarSettings />
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ export async function GET(
         }
 
         const { teamId } = await params;
-        const analytics = await getTeamAnalytics(teamId);
+        const analytics = await getTeamAnalytics(teamId, session.user.id);
 
         // Resolve top contributor name
         if (analytics.topContributorId) {

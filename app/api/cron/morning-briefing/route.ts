@@ -2,10 +2,16 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 // Use Service Role Key to bypass RLS for cron job
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+    console.warn('Supabase environment variables not configured. Morning briefing API disabled.');
+}
+
+const supabaseAdmin = supabaseUrl && supabaseServiceKey 
+    ? createClient(supabaseUrl, supabaseServiceKey)
+    : null;
 
 // Placeholder function for push notifications
 async function sendPushNotification(subscription: any, payload: any) {
@@ -21,6 +27,10 @@ export async function GET(req: Request) {
         return new Response('Unauthorized', { status: 401 });
     }
 
+    if (!supabaseAdmin) {
+        return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
+    }
+
     try {
         // 2. Get all users who have a push subscription stored
         // Assumes you have a 'profiles' or 'subscriptions' table
@@ -33,7 +43,7 @@ export async function GET(req: Request) {
 
         // 3. Trigger notifications (Simplified example using a hypothetical sendPush function)
         const notificationPromises = users.map(async (user) => {
-            // We fetch the briefing data for THIS specific user
+            // We fetch briefing data for THIS specific user
             const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
             const briefingRes = await fetch(`${baseUrl}/api/briefing/summary?userId=${user.id}`, {
                 headers: { 'x-internal-secret': process.env.CRON_SECRET! }

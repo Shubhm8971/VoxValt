@@ -52,11 +52,11 @@ interface Team {
 type PromiseFilter = 'all' | 'active' | 'completed' | 'overdue' | 'assigned-to-me' | 'created-by-me';
 type PromiseSort = 'newest' | 'oldest' | 'due-date' | 'priority' | 'assignee';
 
-export function TeamPromisesDashboard({ 
-  currentTeamId, 
+export function TeamPromisesDashboard({
+  currentTeamId,
   userId,
-  onTeamChange 
-}: { 
+  onTeamChange
+}: {
   currentTeamId: string | null;
   userId: string;
   onTeamChange?: (teamId: string | null) => void;
@@ -73,21 +73,21 @@ export function TeamPromisesDashboard({
     const loadData = async () => {
       try {
         setLoading(true);
-        
+
         const [teamsData, tasksData] = await Promise.all([
           fetchTeams(),
           currentTeamId ? fetchTasks(userId, undefined, currentTeamId) : []
         ]);
 
         setTeams(teamsData);
-        
+
         // Filter only promises and enrich with user data
         const teamPromises = tasksData
           .filter(task => task.task_type === 'promise')
           .map(task => ({
             ...task,
             priority: task.priority || 'medium',
-            tags: task.tags || []
+            tags: (task as any).tags || []
           })) as TeamPromise[];
 
         setPromises(teamPromises);
@@ -114,9 +114,9 @@ export function TeamPromisesDashboard({
         filtered = filtered.filter(p => p.completed);
         break;
       case 'overdue':
-        filtered = filtered.filter(p => 
-          !p.completed && 
-          p.due_date && 
+        filtered = filtered.filter(p =>
+          !p.completed &&
+          p.due_date &&
           new Date(p.due_date) < new Date()
         );
         break;
@@ -159,9 +159,9 @@ export function TeamPromisesDashboard({
     const total = promises.length;
     const completed = promises.filter(p => p.completed).length;
     const active = promises.filter(p => !p.completed).length;
-    const overdue = promises.filter(p => 
-      !p.completed && 
-      p.due_date && 
+    const overdue = promises.filter(p =>
+      !p.completed &&
+      p.due_date &&
       new Date(p.due_date) < new Date()
     ).length;
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -205,7 +205,7 @@ export function TeamPromisesDashboard({
               {currentTeam ? `Shared commitments for ${currentTeam.name}` : 'Select a team to view promises'}
             </p>
           </div>
-          
+
           {teams.length > 0 && (
             <div className="flex items-center gap-3">
               <select
@@ -296,7 +296,7 @@ export function TeamPromisesDashboard({
                 <HandHeart className="w-16 h-16 text-vox-text-muted mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-vox-text mb-2">No promises found</h3>
                 <p className="text-vox-text-secondary">
-                  {filter === 'all' 
+                  {filter === 'all'
                     ? 'Start making and tracking commitments with your team.'
                     : `No ${filter} promises found.`
                   }
@@ -368,11 +368,10 @@ function FilterButtons({ filter, setFilter }: {
         <button
           key={value}
           onClick={() => setFilter(value)}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-            filter === value
-              ? 'bg-purple-600 text-white shadow-md'
-              : 'bg-vox-bg text-vox-text-secondary hover:bg-vox-border/20'
-          }`}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${filter === value
+            ? 'bg-purple-600 text-white shadow-md'
+            : 'bg-vox-bg text-vox-text-secondary hover:bg-vox-border/20'
+            }`}
         >
           {label}
         </button>
@@ -382,11 +381,11 @@ function FilterButtons({ filter, setFilter }: {
 }
 
 // Promise Card Component
-function PromiseCard({ 
-  promise, 
-  userId, 
-  onSelect 
-}: { 
+function PromiseCard({
+  promise,
+  userId,
+  onSelect
+}: {
   promise: TeamPromise;
   userId: string;
   onSelect: (promise: TeamPromise) => void;
@@ -403,49 +402,46 @@ function PromiseCard({
 
   return (
     <div
-      className={`p-4 hover:bg-vox-border/5 transition-all cursor-pointer border-l-4 ${
-        promise.completed ? 'opacity-60' : ''
-      } ${priorityColors[promise.priority || 'medium']}`}
+      className={`p-4 hover:bg-vox-border/5 transition-all cursor-pointer border-l-4 ${promise.completed ? 'opacity-60' : ''
+        } ${priorityColors[promise.priority || 'medium']}`}
       onClick={() => onSelect(promise)}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${
-              promise.completed 
-                ? 'bg-green-500/20 text-green-500' 
-                : isOverdue 
+            <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${promise.completed
+              ? 'bg-green-500/20 text-green-500'
+              : isOverdue
                 ? 'bg-red-500/20 text-red-500'
                 : 'bg-purple-500/20 text-purple-500'
-            }`}>
+              }`}>
               {promise.completed ? 'Completed' : isOverdue ? 'Overdue' : 'Active'}
             </span>
-            
+
             {isCreatedByMe && (
               <span className="text-[10px] bg-blue-500/20 text-blue-500 px-2 py-1 rounded">
                 Created by you
               </span>
             )}
-            
+
             {isAssignedToMe && !isCreatedByMe && (
               <span className="text-[10px] bg-amber-500/20 text-amber-500 px-2 py-1 rounded">
                 Assigned to you
               </span>
             )}
           </div>
-          
-          <h3 className={`font-semibold text-vox-text mb-1 ${
-            promise.completed ? 'line-through' : ''
-          }`}>
+
+          <h3 className={`font-semibold text-vox-text mb-1 ${promise.completed ? 'line-through' : ''
+            }`}>
             {promise.title}
           </h3>
-          
+
           {promise.description && (
             <p className="text-sm text-vox-text-secondary mb-2 line-clamp-2">
               {promise.description}
             </p>
           )}
-          
+
           <div className="flex items-center gap-4 text-xs text-vox-text-muted">
             {promise.due_date && (
               <div className="flex items-center gap-1">
@@ -453,19 +449,19 @@ function PromiseCard({
                 <span>{new Date(promise.due_date).toLocaleDateString()}</span>
               </div>
             )}
-            
+
             <div className="flex items-center gap-1">
               <User size={12} />
               <span>{promise.user?.full_name || 'Unknown'}</span>
             </div>
-            
+
             <div className="flex items-center gap-1">
               <Clock size={12} />
               <span>{formatDistanceToNow(new Date(promise.created_at), { addSuffix: true })}</span>
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {promise.completed ? (
             <CheckCircle className="text-green-500" size={20} />
@@ -479,8 +475,8 @@ function PromiseCard({
 }
 
 // Team Insights Component
-function TeamInsights({ stats, team }: { 
-  stats: ReturnType<typeof useMemo>; 
+function TeamInsights({ stats, team }: {
+  stats: { total: number; completed: number; active: number; overdue: number; completionRate: number };
   team: Team | undefined;
 }) {
   if (!team) return null;
@@ -491,19 +487,19 @@ function TeamInsights({ stats, team }: {
         <TrendingUp className="text-purple-500" size={20} />
         <h3 className="text-lg font-bold text-vox-text">Team Insights</h3>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <div className="text-2xl font-bold text-purple-400 mb-1">{stats.completionRate}%</div>
           <p className="text-xs text-vox-text-secondary uppercase tracking-wider">Completion Rate</p>
           <div className="mt-2 h-2 bg-vox-border/20 rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500"
               style={{ width: `${stats.completionRate}%` }}
             />
           </div>
         </div>
-        
+
         <div>
           <div className="text-2xl font-bold text-amber-400 mb-1">{stats.active}</div>
           <p className="text-xs text-vox-text-secondary uppercase tracking-wider">Active Commitments</p>
@@ -513,7 +509,7 @@ function TeamInsights({ stats, team }: {
             )}
           </p>
         </div>
-        
+
         <div>
           <div className="text-2xl font-bold text-green-400 mb-1">{stats.completed}</div>
           <p className="text-xs text-vox-text-secondary uppercase tracking-wider">Promises Kept</p>

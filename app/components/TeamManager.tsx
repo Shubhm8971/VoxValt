@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Users, UserPlus, Trash2, Copy, Check, Shield, User } from 'lucide-react';
 import { fetchTeams, createTeam, joinTeam } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
+import { TeamCalendar } from './TeamCalendar';
 
 export function TeamManager({ onTeamsUpdate }: { onTeamsUpdate?: () => void }) {
     const [teams, setTeams] = useState<any[]>([]);
@@ -151,9 +152,9 @@ export function TeamManager({ onTeamsUpdate }: { onTeamsUpdate?: () => void }) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 min-h-[400px]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[400px]">
                 {/* Team Sidebar */}
-                <div className="md:border-r border-vox-border p-4 bg-slate-950/20">
+                <div className="lg:border-r border-vox-border p-4 bg-slate-950/20">
                     <div className="space-y-4">
                         <div>
                             <h4 className="text-[10px] font-bold text-vox-text-muted uppercase tracking-widest mb-3">Your Teams</h4>
@@ -219,15 +220,15 @@ export function TeamManager({ onTeamsUpdate }: { onTeamsUpdate?: () => void }) {
                     </div>
                 </div>
 
-                {/* Team Details / Members */}
-                <div className="md:col-span-2 p-6">
+                {/* Team Details / Members / Calendar */}
+                <div className="p-6 space-y-6">
                     {selectedTeamId ? (
-                        <div className="space-y-6">
+                        <>
                             {/* Team Header */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
                                     <h4 className="text-xl font-bold text-vox-text">{teams.find(t => t.id === selectedTeamId)?.name}</h4>
-                                    <p className="text-xs text-vox-text-secondary mt-1">Manage members and invitations for this group.</p>
+                                    <p className="text-xs text-vox-text-secondary mt-1">Manage members, calendars, and team settings.</p>
                                 </div>
                                 <div className="bg-slate-950/40 p-3 rounded-2xl border border-vox-border">
                                     <span className="text-[10px] font-bold text-vox-text-muted uppercase tracking-widest block mb-1">Invite Code</span>
@@ -245,6 +246,9 @@ export function TeamManager({ onTeamsUpdate }: { onTeamsUpdate?: () => void }) {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Team Calendar */}
+                            <TeamCalendar teamId={selectedTeamId} />
 
                             {/* Member List */}
                             <div>
@@ -315,7 +319,7 @@ export function TeamManager({ onTeamsUpdate }: { onTeamsUpdate?: () => void }) {
                                     </button>
                                 )}
                             </div>
-                        </div>
+                        </>
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
                             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">

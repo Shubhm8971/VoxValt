@@ -10,6 +10,7 @@ import AIAnswer from './components/AIAnswer';
 import RecentMemories from './components/RecentMemories';
 import SearchSuggestions from './components/SearchSuggestions';
 import EmptySearch from './components/EmptySearch';
+import PremiumFeature from '../components/PremiumFeature';
 
 // ============================================
 // Types
@@ -222,156 +223,158 @@ export default function SearchPageClient({
     const noResults = hasSearched && !loading && results.length === 0 && !error;
 
     return (
-        <main className="min-h-screen-dvh bg-vox-bg bg-mesh-gradient">
-            {/* Header */}
-            <header className="sticky top-0 z-sticky bg-vox-bg/80 backdrop-blur-xl border-b border-vox-border pt-safe">
-                <div className="px-4 sm:px-6">
-                    {/* Top Row: Back + Title */}
-                    <div className="flex items-center gap-3 h-14">
-                        <button
-                            onClick={() => router.push('/')}
-                            className="
-                w-10 h-10 rounded-xl
-                flex items-center justify-center
-                hover:bg-vox-surface active:scale-95
-                transition-all duration-200
-              "
-                            aria-label="Go back"
-                        >
-                            <svg
-                                className="w-5 h-5 text-vox-text-secondary"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+        <PremiumFeature feature="advanced_search">
+            <main className="min-h-screen-dvh bg-vox-bg bg-mesh-gradient">
+                {/* Header */}
+                <header className="sticky top-0 z-sticky bg-vox-bg/80 backdrop-blur-xl border-b border-vox-border pt-safe">
+                    <div className="px-4 sm:px-6">
+                        {/* Top Row: Back + Title */}
+                        <div className="flex items-center gap-3 h-14">
+                            <button
+                                onClick={() => router.push('/')}
+                                className="
+                    w-10 h-10 rounded-xl
+                    flex items-center justify-center
+                    hover:bg-vox-surface active:scale-95
+                    transition-all duration-200
+                  "
+                                aria-label="Go back"
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15 19l-7-7 7-7"
+                                <svg
+                                    className="w-5 h-5 text-vox-text-secondary"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M15 19l-7-7 7-7"
+                                    />
+                                </svg>
+                            </button>
+
+                            <h1 className="text-lg font-semibold text-vox-text flex-1">
+                                Search Memories
+                            </h1>
+
+                            <span className="text-xs text-vox-text-muted">
+                                {totalMemories} memories
+                            </span>
+                        </div>
+
+                        {/* Search Input */}
+                        <div className="pb-3">
+                            <SearchInput
+                                query={query}
+                                onQueryChange={setQuery}
+                                onSearch={performSearch}
+                                onClear={clearSearch}
+                                loading={loading}
+                                mode={mode}
+                                onModeChange={setMode}
+                                onToggleFilters={() => setShowFilters((prev) => !prev)}
+                                isFiltered={isFiltered}
+                            />
+                        </div>
+
+                        {/* Filter Bar */}
+                        {showFilters && (
+                            <div className="pb-3 animate-fade-in-down">
+                                <FilterBar
+                                    filters={filters}
+                                    onFiltersChange={setFilters}
+                                    availableTags={availableTags}
+                                    availablePeople={availablePeople}
+                                    onApply={() => {
+                                        if (query.trim()) performSearch();
+                                    }}
                                 />
-                            </svg>
-                        </button>
-
-                        <h1 className="text-lg font-semibold text-vox-text flex-1">
-                            Search Memories
-                        </h1>
-
-                        <span className="text-xs text-vox-text-muted">
-                            {totalMemories} memories
-                        </span>
+                            </div>
+                        )}
                     </div>
+                </header>
 
-                    {/* Search Input */}
-                    <div className="pb-3">
-                        <SearchInput
-                            query={query}
-                            onQueryChange={setQuery}
-                            onSearch={performSearch}
-                            onClear={clearSearch}
-                            loading={loading}
-                            mode={mode}
-                            onModeChange={setMode}
-                            onToggleFilters={() => setShowFilters((prev) => !prev)}
-                            isFiltered={isFiltered}
+                {/* Content */}
+                <div className="px-4 sm:px-6 py-4 pb-bottom-nav pb-safe">
+                    {/* Error */}
+                    {error && (
+                        <div className="mb-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 animate-fade-in">
+                            <div className="flex items-start gap-3">
+                                <span className="text-lg">⚠️</span>
+                                <div className="flex-1">
+                                    <p className="text-red-400 text-sm font-medium">
+                                        Search failed
+                                    </p>
+                                    <p className="text-red-400/70 text-xs mt-1">{error}</p>
+                                </div>
+                                <button
+                                    onClick={() => performSearch()}
+                                    className="text-xs text-red-400 underline hover:text-red-300"
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Loading State */}
+                    {loading && <SearchSkeleton />}
+
+                    {/* AI Answer */}
+                    {aiAnswer && !loading && (
+                        <div className="mb-6 animate-fade-in-up">
+                            <AIAnswer
+                                answer={aiAnswer}
+                                query={query}
+                                resultCount={results.length}
+                                isDeep={mode === 'deep'}
+                            />
+                        </div>
+                    )}
+
+                    {/* Search Results */}
+                    {showResults && results.length > 0 && (
+                        <div className="animate-fade-in-up">
+                            <SearchResults
+                                results={results}
+                                query={query}
+                                onComplete={handleComplete}
+                                onArchive={handleArchive}
+                            />
+                        </div>
+                    )}
+
+                    {/* No Results */}
+                    {noResults && !aiAnswer && (
+                        <EmptySearch query={query} onClear={clearSearch} />
+                    )}
+
+                    {/* Suggestions (before searching) */}
+                    {showSuggestions && (
+                        <SearchSuggestions
+                            searchHistory={searchHistory}
+                            onSelect={(suggestion) => {
+                                setQuery(suggestion);
+                                performSearch(suggestion);
+                            }}
+                            onClearHistory={clearHistory}
                         />
-                    </div>
+                    )}
 
-                    {/* Filter Bar */}
-                    {showFilters && (
-                        <div className="pb-3 animate-fade-in-down">
-                            <FilterBar
-                                filters={filters}
-                                onFiltersChange={setFilters}
-                                availableTags={availableTags}
-                                availablePeople={availablePeople}
-                                onApply={() => {
-                                    if (query.trim()) performSearch();
-                                }}
+                    {/* Recent Memories (before searching) */}
+                    {showRecent && query.length === 0 && (
+                        <div className="mt-6">
+                            <RecentMemories
+                                memories={recentMemories}
+                                onComplete={handleComplete}
                             />
                         </div>
                     )}
                 </div>
-            </header>
-
-            {/* Content */}
-            <div className="px-4 sm:px-6 py-4 pb-bottom-nav pb-safe">
-                {/* Error */}
-                {error && (
-                    <div className="mb-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 animate-fade-in">
-                        <div className="flex items-start gap-3">
-                            <span className="text-lg">⚠️</span>
-                            <div className="flex-1">
-                                <p className="text-red-400 text-sm font-medium">
-                                    Search failed
-                                </p>
-                                <p className="text-red-400/70 text-xs mt-1">{error}</p>
-                            </div>
-                            <button
-                                onClick={() => performSearch()}
-                                className="text-xs text-red-400 underline hover:text-red-300"
-                            >
-                                Retry
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Loading State */}
-                {loading && <SearchSkeleton />}
-
-                {/* AI Answer */}
-                {aiAnswer && !loading && (
-                    <div className="mb-6 animate-fade-in-up">
-                        <AIAnswer
-                            answer={aiAnswer}
-                            query={query}
-                            resultCount={results.length}
-                            isDeep={mode === 'deep'}
-                        />
-                    </div>
-                )}
-
-                {/* Search Results */}
-                {showResults && results.length > 0 && (
-                    <div className="animate-fade-in-up">
-                        <SearchResults
-                            results={results}
-                            query={query}
-                            onComplete={handleComplete}
-                            onArchive={handleArchive}
-                        />
-                    </div>
-                )}
-
-                {/* No Results */}
-                {noResults && !aiAnswer && (
-                    <EmptySearch query={query} onClear={clearSearch} />
-                )}
-
-                {/* Suggestions (before searching) */}
-                {showSuggestions && (
-                    <SearchSuggestions
-                        searchHistory={searchHistory}
-                        onSelect={(suggestion) => {
-                            setQuery(suggestion);
-                            performSearch(suggestion);
-                        }}
-                        onClearHistory={clearHistory}
-                    />
-                )}
-
-                {/* Recent Memories (before searching) */}
-                {showRecent && query.length === 0 && (
-                    <div className="mt-6">
-                        <RecentMemories
-                            memories={recentMemories}
-                            onComplete={handleComplete}
-                        />
-                    </div>
-                )}
-            </div>
-        </main>
+            </main>
+        </PremiumFeature>
     );
 }
 

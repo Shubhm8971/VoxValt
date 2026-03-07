@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { teamId: string, userId: string } }
+    { params }: { params: Promise<{ teamId: string, userId: string }> }
 ) {
     try {
         const supabase = await createServerSupabaseClient();
@@ -14,7 +14,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { teamId, userId } = params;
+        const { teamId, userId } = await params;
 
         // 1. Check if requester is Admin or Owner
         const { data: requesterMember, error: requesterError } = await supabase

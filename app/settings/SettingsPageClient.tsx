@@ -139,7 +139,7 @@ export default function SettingsPageClient({
                     {/* Calendar Integration */}
                     <section>
                         <h2 className="text-lg font-semibold mb-3 text-vox-text">Integrations</h2>
-                        <CalendarSettings userId={user.id} />
+                        <CalendarSettings />
                     </section>
 
                     {/* Profile */}
