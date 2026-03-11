@@ -114,14 +114,23 @@ export function useRecordingLimit() {
         return;
       }
 
-      const { data: subscription } = await supabase
+      // For demo mode or missing subscription, allow recording
+      const { data: subscription, error } = await supabase
         .from('user_subscriptions')
         .select('plan_id, status, current_period_end')
         .eq('user_id', user.id)
         .single();
 
+      // If no subscription record or error, allow recording (demo mode)
+      if (error || !subscription) {
+        setCanRecord(true);
+        setRemaining(undefined);
+        setLoading(false);
+        return;
+      }
+
       // If premium or active, allow recording
-      if (subscription?.status === 'active') {
+      if (subscription.status === 'active') {
         setCanRecord(true);
         setRemaining(undefined);
         setLoading(false);
