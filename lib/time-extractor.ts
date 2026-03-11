@@ -17,8 +17,8 @@ export function extractTimeFromText(text: string): TimeExtraction {
 
   // High confidence patterns - specific times
   
-  // Pattern: "X:XX am/pm" or "Xpm" or "X am"
-  const timePattern = /(\d{1,2}):?(\d{2})?\s*(am|pm|AM|PM)|(\d{1,2})\s*(am|pm|AM|PM)/gi;
+  // Pattern: "at X:XX am/pm" or "at Xpm" or "at X am"
+  const timePattern = /at\s+(\d{1,2}):?(\d{2})?\s*(am|pm|AM|PM)|at\s+(\d{1,2})\s*(am|pm|AM|PM)/gi;
   const timeMatch = timePattern.exec(text);
   
   if (timeMatch) {

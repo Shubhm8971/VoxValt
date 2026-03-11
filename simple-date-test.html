@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VoxValt Simple Date Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .test { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 10px 0; }
+        button:hover { background: #5568d3; }
+        .result { background: #f5f5f5; padding: 15px; border-radius: 4px; margin: 10px 0; white-space: pre-wrap; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🎙️ VoxValt Date Test (Direct)</h1>
+    
+    <div class="test">
+        <h2>Test Date Extraction Logic</h2>
+        <p>This test uses the same date extraction logic as VoxValt directly in your browser:</p>
+        
+        <input type="text" id="testInput" placeholder="e.g., Call Mom tomorrow at 5pm" value="Call Mom tomorrow at 5pm" />
+        <button onclick="testDirectExtraction()">Test Date Extraction</button>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // Copy the date extraction logic directly from VoxValt
+        function extractDateFromText(text) {
+            const textLower = text.toLowerCase().trim();
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            // TOMORROW
+            if (/\btomorrow\b/.test(textLower)) {
+                return {
+                    date: tomorrow.toISOString().split('T')[0],
+                    time: null,
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            // TONIGHT
+            if (/\b(today|tonight)\b/.test(textLower)) {
+                return {
+                    date: today.toISOString().split('T')[0],
+                    time: '20:00',
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            // NEXT [DAY OF WEEK]
+            const dayPattern = /\bnext\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
+            const dayMatch = textLower.match(dayPattern);
+            if (dayMatch) {
+                const dayName = dayMatch[1].toLowerCase();
+                const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                const todayDay = today.getDay();
+                const targetDay = days.indexOf(dayName);
+                let daysUntilTarget = (targetDay - todayDay + 7) % 7;
+                if (daysUntilTarget === 0) daysUntilTarget = 7; // If same day, go to next week
+                const nextDate = new Date(today);
+                nextDate.setDate(today.getDate() + daysUntilTarget);
+                return {
+                    date: nextDate.toISOString().split('T')[0],
+                    time: null,
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            // Check for "at 5pm" time pattern
+            const timePattern = /\bat\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i;
+            const timeMatch = textLower.match(timePattern);
+            if (timeMatch) {
+                let hours = parseInt(timeMatch[1]);
+                const minutes = parseInt(timeMatch[2] || '0');
+                const period = (timeMatch[3] || '').toLowerCase();
+                
+                if (period === 'pm' && hours !== 12) hours += 12;
+                if (period === 'am' && hours === 12) hours = 0;
+                
+                return {
+                    date: null,
+                    time: `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`,
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            return {
+                date: null,
+                time: null,
+                confidence: 'low',
+                original: text,
+            };
+        }
+
+        function testDirectExtraction() {
+            const input = document.getElementById('testInput').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!input.trim()) {
+                resultDiv.innerHTML = '<p class="error">Please enter some text to test</p>';
+                return;
+            }
+
+            const result = extractDateFromText(input);
+            
+            let html = '<h3>Extraction Results:</h3>';
+            html += '<p><strong>Input:</strong> ' + result.original + '</p>';
+            html += '<p><strong>Extracted Date:</strong> ' + (result.date || 'No date found') + '</p>';
+            html += '<p><strong>Time:</strong> ' + (result.time || 'No time found') + '</p>';
+            html += '<p><strong>Confidence:</strong> ' + result.confidence + '</p>';
+            
+            if (result.date) {
+                const dateObj = new Date(result.date);
+                html += '<p class="success">✅ Date extraction working! Date: ' + dateObj.toLocaleDateString() + '</p>';
+            } else {
+                html += '<p class="error">❌ No date found</p>';
+            }
+            
+            resultDiv.innerHTML = html;
+        }
+
+        // Test automatically on load
+        window.onload = function() {
+            testDirectExtraction();
+        };
+    </script>
+</body>
+</html>
