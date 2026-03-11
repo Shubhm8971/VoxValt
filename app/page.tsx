@@ -297,21 +297,55 @@ export default function Home() {
                 onTasksExtracted={handleTasksExtracted}
                 compact={isMobile}
               />
-              {extractedTasks.length > 0 && (
-                <div className="max-w-4xl mx-auto px-4 sm:px-6">
-                  <ExtractedTasksList 
-                    tasks={extractedTasks} 
-                    onClear={() => setExtractedTasks([])}
-                    onSave={handleSaveTasks}
-                    userId={userId}
-                  />
+              
+              {/* Quick Test Button */}
+              <div className="max-w-4xl mx-auto px-4 sm:px-6 mt-4">
+                <div className="bg-vox-surface/50 rounded-xl p-4 border border-vox-border">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-medium text-vox-text">Quick Task Test</h3>
+                    <span className="text-xs text-vox-text-secondary">Bypass microphone issues</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      id="quickTestInput"
+                      type="text"
+                      placeholder="Call Mom tomorrow at 5pm"
+                      className="flex-1 px-3 py-2 bg-vox-surface border border-vox-border rounded-lg text-vox-text placeholder-vox-text-secondary focus:outline-none focus:border-brand-500"
+                      defaultValue="Call Mom tomorrow at 5pm"
+                    />
+                    <button
+                      onClick={() => {
+                        const input = document.getElementById('quickTestInput') as HTMLInputElement;
+                        const testText = input.value.trim();
+                        if (testText) {
+                          console.log('[QUICK TEST] Processing:', testText);
+                          // Simulate extracted task
+                          const mockTask = {
+                            id: 'test-' + Date.now(),
+                            title: testText,
+                            description: testText,
+                            type: 'reminder' as const,
+                            due_date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // tomorrow
+                            people_involved: [],
+                            context: testText,
+                            user_id: userId,
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString(),
+                            status: 'pending' as const,
+                            priority: 'medium' as const,
+                            tags: [],
+                            metadata: {}
+                          };
+                          setExtractedTasks([mockTask]);
+                          console.log('[QUICK TEST] Task created:', mockTask);
+                        }
+                      }}
+                      className="px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors text-sm font-medium"
+                    >
+                      Test Extraction
+                    </button>
+                  </div>
                 </div>
-              )}
-            </div>
-          ) : activeTab === 'teams' ? (
-            <div className="animate-fade-in-up space-y-6">
-              <div className="text-center py-8 text-gray-500">
-                Team Manager temporarily disabled for build
               </div>
             </div>
           ) : activeTab === 'archive' ? (
