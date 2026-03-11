@@ -25,6 +25,7 @@ export interface Task {
   priority?: 'low' | 'medium' | 'high';
   labels?: string[];
   team_id?: string;
+  embedding?: number[];
 }
 
 export interface ExtractedData {
@@ -34,6 +35,7 @@ export interface ExtractedData {
     type: 'task' | 'reminder' | 'promise' | 'recurring';
     due_date?: string | null;
     recurrence?: string | null;
+    embedding?: number[];
   }>;
   summary: string;
 }

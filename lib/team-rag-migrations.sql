@@ -1,0 +1,53 @@
+-- Final update to match_tasks for Phase 4 (Team Memory + Board Filtering)
+CREATE OR REPLACE FUNCTION match_tasks (
+  query_embedding vector(768),
+  match_threshold float,
+  match_count int,
+  p_user_id uuid,
+  p_is_premium boolean DEFAULT false,
+  p_team_id uuid DEFAULT null,
+  p_board_id uuid DEFAULT null
+)
+RETURNS TABLE (
+  id uuid,
+  title text,
+  description text,
+  task_type text,
+  due_date timestamp with time zone,
+  status text,
+  created_at timestamp with time zone,
+  similarity float
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    t.id,
+    t.title,
+    t.description,
+    t.task_type,
+    t.due_date,
+    t.status,
+    t.created_at,
+    1 - (t.embedding <=> query_embedding) AS similarity
+  FROM public.tasks t
+  WHERE 
+    -- Filter by Team ID if provided, otherwise filter by User ID (personal tasks)
+    (
+      p_team_id IS NOT NULL AND t.team_id = p_team_id
+      OR
+      p_team_id IS NULL AND t.user_id = p_user_id AND t.team_id IS NULL
+    )
+    -- Filter by Board ID if provided
+    AND (p_board_id IS NULL OR t.board_id = p_board_id)
+    AND t.embedding IS NOT NULL
+    AND 1 - (t.embedding <=> query_embedding) > match_threshold
+    AND (
+      p_is_premium = true 
+      OR t.created_at >= (now() - interval '7 days')
+    )
+  ORDER BY t.embedding <=> query_embedding
+  LIMIT match_count;
+END;
+$$;

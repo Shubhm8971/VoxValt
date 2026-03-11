@@ -1,8 +1,9 @@
-import { createServerClient } from './supabase';
+import { createAdminClient } from './supabase';
 import { Recording, Task } from '@/types';
 import { getUserSubscriptionPlan } from './subscription';
 
-const supabase = createServerClient();
+// Use admin client to bypass RLS for server-side DB operations
+const supabase = createAdminClient();
 
 // Recording operations
 export async function saveRecording(
@@ -148,13 +149,38 @@ export async function updateTask(taskId: string, updates: Partial<Task>): Promis
   if (error) throw new Error(`Failed to update task: ${error.message}`);
   return data;
 }
+export async function searchTasks(
+  userId: string,
+  queryEmbedding: number[],
+  isPremium = false,
+  matchThreshold = 0.5,
+  matchCount = 5,
+  teamId?: string | null,
+  boardId?: string | null
+): Promise<any[]> {
+  const { data, error } = await supabase.rpc('match_tasks', {
+    query_embedding: queryEmbedding,
+    match_threshold: matchThreshold,
+    match_count: matchCount,
+    p_user_id: userId,
+    p_is_premium: isPremium,
+    p_team_id: teamId || null,
+    p_board_id: boardId || null
+  });
+
+  if (error) {
+    console.error('Failed to search tasks:', error);
+    throw new Error(`Failed to search tasks: ${error.message}`);
+  }
+  return data || [];
+}
+
 export async function deleteTask(taskId: string): Promise<void> {
   const { error } = await supabase
     .from('tasks')
     .delete()
     .eq('id', taskId);
 
-  // ... (deleteTask implementation)
   if (error) throw new Error(`Failed to delete task: ${error.message}`);
 }
 
@@ -182,7 +208,6 @@ export async function getMonthlyRecordingCount(userId: string): Promise<number> 
   return count || 0;
 }
 
-// Memo/Vector operations
 export async function saveMemo(
   userId: string,
   content: string,
@@ -409,6 +434,11 @@ export async function getTeamAnalytics(teamId: string, userId: string): Promise<
 
   const topContributorEntry = Object.entries(contributors).sort((a, b) => b[1] - a[1])[0];
 
+  // Promise Reliability Score
+  const totalPromises = tasks.filter(t => t.task_type === 'promise').length;
+  const completedPromises = tasks.filter(t => t.task_type === 'promise' && t.completed).length;
+  const reliabilityScore = totalPromises > 0 ? (completedPromises / totalPromises) * 100 : 100;
+
   return {
     totalMemories,
     totalTasks,
@@ -416,7 +446,10 @@ export async function getTeamAnalytics(teamId: string, userId: string): Promise<
     completionRate,
     dailyTrend,
     topContributorId: topContributorEntry ? topContributorEntry[0] : null,
-    topContributorCount: topContributorEntry ? topContributorEntry[1] : 0
+    topContributorCount: topContributorEntry ? topContributorEntry[1] : 0,
+    reliabilityScore,
+    totalPromises,
+    completedPromises
   };
 }
 

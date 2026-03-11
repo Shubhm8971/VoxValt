@@ -29,7 +29,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
           password,
         });
         if (error) throw error;
-        
+
         // If signup successful and no email confirmation required, log them in
         if (data.user && !data.user.email_confirmed_at) {
           setMessage('Account created! You can now log in.');
@@ -56,7 +56,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
     }
   };
 
-  const handlePasswordReset = async () => {
+  const handleMagicLink = async () => {
     if (!email) {
       setError('Please enter your email address first');
       return;
@@ -67,12 +67,15 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
     setMessage(null);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://voxvalt.vercel.app/auth?reset=true',
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
       });
-      
+
       if (error) throw error;
-      setMessage('Password reset link sent! Check your email.');
+      setMessage('Magic Link sent! Check your email to log in instantly.');
       setShowForgotPassword(false);
     } catch (err) {
       setError((err as Error).message);
@@ -248,7 +251,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
             <div style={{ textAlign: 'center', marginTop: '1rem' }}>
               <button
                 type="button"
-                onClick={handlePasswordReset}
+                onClick={handleMagicLink}
                 disabled={loading}
                 style={{
                   background: '#667eea',
@@ -261,7 +264,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
                   opacity: loading ? 0.7 : 1
                 }}
               >
-                {loading ? 'Sending...' : 'Send Reset Link'}
+                {loading ? 'Sending...' : 'Send Magic Link Login'}
               </button>
               <br />
               <button

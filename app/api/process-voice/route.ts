@@ -51,7 +51,7 @@ Rules:
 - Extract ALL distinct items, even from a single sentence
 - If no due date is explicitly stated, set it to null
 - Be precise with people's names
-- **Board Detection**: If the user mentions a specific category or board name (e.g., "put this in my Shopping list", "add to the Home Reno board"), extract that as "board_name".
+- **Board Detection**: If the user mentions a specific category or board name (e.g., "Add this to Work", "put this in my Shopping list", "add to the Home Reno board"), extract that as "board_name". Match this against the names of the user's existing memory boards.
 - **Report Detection**: If the user is asking a question or requesting a summary (e.g., "What do I need to do today?", "How is the team doing?", "Give me a report on the Home board"), set "is_report_request" to true.
 - Set "report_scope" to "team" if they mention the team/family or others, "personal" if they talk about themselves, and "all" if it's general.
 - **Settings Detection**: If the user wants to change a setting or navigate, populate "settings_action".
@@ -84,6 +84,16 @@ export async function POST(req: NextRequest) {
         }
 
         const userId = user.id;
+
+        // Check if user can record (based on plan limits)
+        const { canUserRecord } = await import('@/lib/subscription');
+        const check = await canUserRecord(userId);
+        if (!check.canRecord) {
+            return NextResponse.json(
+                { error: 'Limit reached', message: check.reason },
+                { status: 403 }
+            );
+        }
 
         // 2. Get the audio blob
         const formData = await req.formData();

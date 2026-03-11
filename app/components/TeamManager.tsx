@@ -6,6 +6,8 @@ import { Users, UserPlus, Trash2, Copy, Check, Shield, User } from 'lucide-react
 import { fetchTeams, createTeam, joinTeam } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
 import { TeamCalendar } from './TeamCalendar';
+import { IntegrationSettings } from './IntegrationSettings';
+import { Slack } from 'lucide-react';
 
 export function TeamManager({ onTeamsUpdate }: { onTeamsUpdate?: () => void }) {
     const [teams, setTeams] = useState<any[]>([]);
@@ -297,6 +299,15 @@ export function TeamManager({ onTeamsUpdate }: { onTeamsUpdate?: () => void }) {
                                         );
                                     })}
                                 </div>
+                            </div>
+
+                            {/* Integrations Section */}
+                            <div>
+                                <h5 className="text-[10px] font-bold text-vox-text-muted uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <Slack size={12} className="text-purple-400" />
+                                    External Integrations
+                                </h5>
+                                <IntegrationSettings teamId={selectedTeamId} />
                             </div>
 
                             {/* Danger Zone */}

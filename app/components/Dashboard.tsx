@@ -23,6 +23,8 @@ import CommitmentDashboard from './CommitmentDashboard';
 import { MemoryBoards } from './MemoryBoards';
 import { FamilyAnalytics } from './FamilyAnalytics';
 import { deleteRecording, deleteTask, updateTask, updateTaskStatus } from '@/lib/api-client';
+import { ChatAssistant } from './ChatAssistant';
+import { UsageIndicator } from './UsageIndicator';
 
 interface DashboardProps {
   userId: string;
@@ -55,6 +57,7 @@ export function Dashboard({ userId }: DashboardProps) {
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [monthlyCount, setMonthlyCount] = useState<number>(0);
 
   // Modals
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -68,16 +71,20 @@ export function Dashboard({ userId }: DashboardProps) {
     try {
       setLoading(true);
       setError(null);
-      const [tasksData, recordingsData, subData, teamsData] = await Promise.all([
+      const [tasksData, recordingsData, subData, teamsData, usageData] = await Promise.all([
         fetchTasks(userId, undefined, currentTeamId || undefined, selectedBoardId || undefined),
         fetchRecordings(userId, currentTeamId || undefined, selectedBoardId || undefined),
         fetchSubscriptionStatus(),
         fetchTeams(),
+        fetch('/api/user/usage').then(res => res.json())
       ]);
       setTasks(tasksData);
       setRecordings(recordingsData);
       setIsPremium(subData.isPremium);
       setTeams(teamsData);
+      if (usageData.success) {
+        setMonthlyCount(usageData.count);
+      }
 
       // Load team members if a team is selected
       if (currentTeamId) {
@@ -427,6 +434,16 @@ export function Dashboard({ userId }: DashboardProps) {
         </div>
       )}
 
+      {/* Usage Indicator */}
+      <div className="mb-6">
+        <UsageIndicator
+          used={monthlyCount}
+          total={5}
+          isPremium={isPremium}
+          onUpgrade={handleUpgrade}
+        />
+      </div>
+
       {/* Freemium Banner */}
       {!loading && !isPremium && (
         <div className="mb-6 p-4 bg-brand-500/10 border border-brand-500/20 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -506,6 +523,7 @@ export function Dashboard({ userId }: DashboardProps) {
           onUpdate={handlePromiseUpdate}
         />
       )}
+      <ChatAssistant teamId={currentTeamId} boardId={selectedBoardId} />
     </div>
   );
 }

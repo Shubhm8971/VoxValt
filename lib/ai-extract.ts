@@ -143,7 +143,8 @@ async function extractTasksUsingGemini(transcription: string): Promise<Extracted
       3. Extract specific due dates and times relative to the Current Date/Time. Calculate the exact ISO date string (YYYY-MM-DDTHH:mm:00).
       4. If a time is mentioned (e.g., "tonight", "at 5pm", "in 2 hours"), include it in the due_date.
       5. PAY SPECIAL ATTENTION to "Promises" - any time the user says they will do something for someone else, mark it as a 'promise'.
-      6. Create a brief summary of what was extracted.
+      6. **Board Detection**: If the user mentions a category or board name (e.g., "Add milk to my Grocery board", "Put this in Work"), extract the name of the board as "board_name".
+      7. Create a brief summary of what was extracted.
       
       Return ONLY valid JSON in the following format, without any markdown formatting or code blocks:
       {
@@ -152,7 +153,8 @@ async function extractTasksUsingGemini(transcription: string): Promise<Extracted
             "title": "Concise title of the task",
             "description": "More details if available",
             "type": "task" | "reminder" | "promise" | "recurring",
-            "due_date": "YYYY-MM-DDTHH:mm:00" or null
+            "due_date": "YYYY-MM-DDTHH:mm:00" or null,
+            "board_name": "string" or null
           }
         ],
         "summary": "Brief summary of extracted items"
@@ -199,18 +201,36 @@ export async function extractTasksFromTranscription(
   transcription: string
 ): Promise<ExtractedData> {
   // Try Gemini API first with timeout, always fall back to patterns
+  let extracted: ExtractedData;
   try {
-    const result = await Promise.race([
+    extracted = await Promise.race([
       extractTasksUsingGemini(transcription),
       new Promise<ExtractedData>((_, reject) =>
         setTimeout(() => reject(new Error('Timeout')), 8000)
       ),
     ]);
-    return result;
   } catch (error) {
     console.error('Gemini timeout or error, using patterns:', error);
-    return extractTasksUsingPatterns(transcription);
+    extracted = extractTasksUsingPatterns(transcription);
   }
+
+  // Generate embeddings for each task for semantic search
+  if (extracted.tasks && extracted.tasks.length > 0) {
+    try {
+      const taskWithEmbeddings = await Promise.all(
+        extracted.tasks.map(async (task) => {
+          const embeddingText = `${task.title} ${task.description || ''}`;
+          const embedding = await generateEmbedding(embeddingText);
+          return { ...task, embedding };
+        })
+      );
+      extracted.tasks = taskWithEmbeddings as any;
+    } catch (e) {
+      console.error('Failed to generate embeddings during extraction:', e);
+    }
+  }
+
+  return extracted;
 }
 
 // Generate text embedding for semantic search

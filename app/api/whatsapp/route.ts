@@ -52,8 +52,15 @@ export async function POST(req: NextRequest) {
         const userId = whatsappUser.user_id;
         let transcription = text;
 
-        // 2. If it's a voice note, transcribe it
+        // 2. If it's a voice note, check recording limits and then transcribe
         if (mediaUrl) {
+            const { canUserRecord } = await import('@/lib/subscription');
+            const check = await canUserRecord(userId);
+
+            if (!check.canRecord) {
+                return respondWithTwiML("You've reached your monthly limit for voice notes on the Free Plan. Upgrade to VoxValt Premium for unlimited recordings! 🚀");
+            }
+
             console.log(`Handling media type: ${mediaType} from ${mediaUrl}`);
             const transcribedText = await transcribeWhatsAppMedia(mediaUrl, mediaType);
             if (transcribedText) {
@@ -72,15 +79,37 @@ export async function POST(req: NextRequest) {
             return respondWithTwiML("Got it! I've saved your note, but I didn't find any specific tasks.");
         }
 
-        // 4. Save tasks to Supabase
+        // 4. Fetch user's boards for board detection
+        const { data: userBoards } = await supabase
+            .from('memory_boards')
+            .select('id, name, team_id')
+            .or(`created_by.eq.${userId},team_id.in.(select team_id from team_members where user_id='${userId}')`);
+
+        // 5. Save tasks to Supabase with board/team mapping
         for (const task of extracted.tasks) {
+            let taskBoardId = null;
+            let taskTeamId = null;
+
+            // Try to match board_name with user's boards
+            if ((task as any).board_name && userBoards) {
+                const matchedBoard = userBoards.find(b =>
+                    b.name.toLowerCase() === (task as any).board_name.toLowerCase()
+                );
+                if (matchedBoard) {
+                    taskBoardId = matchedBoard.id;
+                    taskTeamId = matchedBoard.team_id;
+                }
+            }
+
             await supabase.from('tasks').insert({
                 user_id: userId,
                 title: task.title,
                 description: task.description || transcription,
                 due_date: task.due_date,
-                type: task.type,
-                status: 'pending'
+                task_type: task.type, // Note: changed from 'type' to 'task_type' to match schema
+                status: 'pending',
+                board_id: taskBoardId,
+                team_id: taskTeamId
             });
         }
 
