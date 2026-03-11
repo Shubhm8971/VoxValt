@@ -98,6 +98,10 @@ export default function VoiceRecorder({
     // Recording limit check
     const { canRecord, remaining, reason, loading: limitLoading } = useRecordingLimit();
     const [showLimitModal, setShowLimitModal] = useState(false);
+    
+    // Simple bypass mode for testing
+    const [bypassMode, setBypassMode] = useState(false);
+    const [testText, setTestText] = useState('Call Mom tomorrow at 5pm');
 
     // Refs
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -375,6 +379,31 @@ export default function VoiceRecorder({
     }, []);
 
     const startRecording = useCallback(async () => {
+        // Bypass mode for testing
+        if (bypassMode) {
+            console.log('[BYPASS] Processing text directly:', testText);
+            setStatus('processing');
+            
+            try {
+                const localExtracted = extractTasksFromTranscript(testText);
+                console.log('[BYPASS] Local extraction result:', localExtracted);
+                setResult(localExtracted);
+                setStatus('success');
+                
+                if (localExtracted.items.length > 0) {
+                    console.log('[BYPASS] Calling onTasksExtracted with items:', localExtracted.items);
+                    onTasksExtracted?.(localExtracted.items as Task[]);
+                } else {
+                    console.log('[BYPASS] No items extracted from text');
+                }
+            } catch (error) {
+                console.error('[BYPASS] Error processing text:', error);
+                setStatus('error');
+                setError('Failed to process text');
+            }
+            return;
+        }
+
         // Check recording limit before starting
         if (!limitLoading && !canRecord) {
             setShowLimitModal(true);
@@ -550,13 +579,45 @@ export default function VoiceRecorder({
 
             {/* Controls */}
             <div className="w-full p-8 pt-0 flex flex-col items-center gap-4">
+                {/* Bypass Mode Toggle */}
+                <div className="flex items-center gap-2 mb-2">
+                    <button
+                        onClick={() => setBypassMode(!bypassMode)}
+                        className={`text-xs px-3 py-1 rounded-full transition-colors ${
+                            bypassMode 
+                                ? 'bg-purple-500 text-white' 
+                                : 'bg-white/10 text-white/60 hover:bg-white/20'
+                        }`}
+                    >
+                        {bypassMode ? '🔧 Bypass Mode ON' : '🎤 Normal Mode'}
+                    </button>
+                </div>
+
+                {/* Bypass Mode Text Input */}
+                {bypassMode && (
+                    <div className="w-full max-w-md space-y-2 animate-in fade-in slide-in-from-top-2">
+                        <textarea
+                            value={testText}
+                            onChange={(e) => setTestText(e.target.value)}
+                            placeholder="Type what you want to extract, e.g., 'Call Mom tomorrow at 5pm'"
+                            className="w-full p-3 rounded-lg bg-white/10 text-white placeholder-white/50 border border-white/20 focus:border-purple-500 focus:outline-none resize-none"
+                            rows={2}
+                        />
+                        <div className="text-xs text-white/40 text-center">
+                            💡 Type any phrase with dates/times to test extraction
+                        </div>
+                    </div>
+                )}
+
                 <button
                     onClick={status === 'recording' ? stopRecording : startRecording}
                     className={`group relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 ${status === 'recording'
                         ? 'bg-red-500 shadow-glow-red scale-110'
-                        : 'bg-white text-slate-900 hover:scale-105'}`}
+                        : bypassMode 
+                            ? 'bg-purple-500 text-white hover:scale-105' 
+                            : 'bg-white text-slate-900 hover:scale-105'}`}
                 >
-                    {status === 'recording' ? <Square size={24} fill="currentColor" /> : <Mic size={32} />}
+                    {status === 'recording' ? <Square size={24} fill="currentColor" /> : bypassMode ? <span className="text-2xl">🔍</span> : <Mic size={32} />}
                     {status === 'idle' && <div className="absolute inset-0 rounded-full bg-white/20 animate-ping" />}
                 </button>
 

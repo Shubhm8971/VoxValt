@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VoxValt Voice Alternative</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #f5f5f5; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; margin-bottom: 30px; }
+        .input-area { margin: 20px 0; }
+        textarea { width: 100%; height: 100px; padding: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; resize: vertical; }
+        button { background: #667eea; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin: 10px 0; }
+        button:hover { background: #5568d3; }
+        .result { margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea; }
+        .task-item { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #28a745; }
+        .task-title { font-weight: bold; color: #333; }
+        .task-date { color: #666; font-size: 14px; margin-top: 5px; }
+        .task-type { display: inline-block; padding: 4px 8px; background: #e3f2fd; color: #1976d2; border-radius: 4px; font-size: 12px; margin-top: 8px; }
+        .error { color: #dc3545; background: #f8d7da; padding: 15px; border-radius: 8px; }
+        .success { color: #155724; background: #d4edda; padding: 15px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ VoxValt Voice Alternative</h1>
+        <p style="text-align: center; color: #666;">Type or paste your voice transcription to extract tasks with dates</p>
+        
+        <div class="input-area">
+            <textarea id="textInput" placeholder="Type what you said, e.g., 'Call Mom tomorrow at 5pm' or 'Meeting next Friday at 2pm'"></textarea>
+            <br>
+            <button onclick="extractTasks()">🔍 Extract Tasks</button>
+            <button onclick="loadExample()">📝 Load Example</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Date extraction logic
+        function extractDateFromText(text) {
+            const textLower = text.toLowerCase().trim();
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            // TOMORROW
+            if (/\btomorrow\b/.test(textLower)) {
+                return {
+                    date: tomorrow.toISOString().split('T')[0],
+                    time: null,
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            // TONIGHT
+            if (/\b(today|tonight)\b/.test(textLower)) {
+                return {
+                    date: today.toISOString().split('T')[0],
+                    time: '20:00',
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            // NEXT [DAY OF WEEK]
+            const dayPattern = /\bnext\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
+            const dayMatch = textLower.match(dayPattern);
+            if (dayMatch) {
+                const dayName = dayMatch[1].toLowerCase();
+                const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                const todayDay = today.getDay();
+                const targetDay = days.indexOf(dayName);
+                let daysUntilTarget = (targetDay - todayDay + 7) % 7;
+                if (daysUntilTarget === 0) daysUntilTarget = 7;
+                const nextDate = new Date(today);
+                nextDate.setDate(today.getDate() + daysUntilTarget);
+                return {
+                    date: nextDate.toISOString().split('T')[0],
+                    time: null,
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            return {
+                date: null,
+                time: null,
+                confidence: 'low',
+                original: text,
+            };
+        }
+
+        // Task extraction patterns
+        function extractTasksFromText(text) {
+            const extractedItems = [];
+
+            const patterns = [
+                { regex: /(?:i need to|need to|should|must|gotta|have to)\s+([^.!?]+)/gi, type: 'task' },
+                { regex: /(?:todo|task)[\s:]*([^.!?]+)/gi, type: 'task' },
+                { regex: /(?:remind me|reminder|remember to)\s+([^.!?]+(?:at|on|by|tomorrow|next|today)?)/gi, type: 'reminder' },
+                { regex: /(?:call|contact|email|text)\s+([^.!?]+(?:at|on|by|tomorrow|next|today)?)/gi, type: 'reminder' },
+                { regex: /(?:i will|i'll|i am going to|imma)\s+([^.!?]+)/gi, type: 'task' },
+                { regex: /(?:i promise|i'll make sure|i guarantee)\s+([^.!?]+)/gi, type: 'promise' },
+                { regex: /(?:every|daily|weekly|monthly|always)\s+([^.!?]+)/gi, type: 'recurring' },
+            ];
+
+            patterns.forEach(({ regex, type }) => {
+                let match;
+                regex.lastIndex = 0;
+                while ((match = regex.exec(text)) !== null) {
+                    const content = match[1].trim();
+                    
+                    // Extract date from the content
+                    const dateExtraction = extractDateFromText(content);
+                    
+                    extractedItems.push({
+                        title: content,
+                        description: content,
+                        type: type,
+                        due_date: dateExtraction.date,
+                        people_involved: [],
+                        context: text
+                    });
+                }
+            });
+
+            return {
+                summary: extractedItems.length > 0
+                    ? `Extracted ${extractedItems.length} task(s) from text`
+                    : 'No tasks found in text',
+                items: extractedItems,
+                tags: [],
+                sentiment: 'neutral'
+            };
+        }
+
+        function extractTasks() {
+            const input = document.getElementById('textInput').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!input.trim()) {
+                resultDiv.innerHTML = '<div class="error">❌ Please enter some text to extract tasks from</div>';
+                return;
+            }
+
+            const extracted = extractTasksFromText(input);
+            
+            let html = '<div class="result">';
+            html += '<h3>🎯 Extraction Results:</h3>';
+            html += '<p><strong>Input:</strong> ' + input + '</p>';
+            html += '<p><strong>Summary:</strong> ' + extracted.summary + '</p>';
+            
+            if (extracted.items.length > 0) {
+                html += '<h4>📋 Extracted Tasks:</h4>';
+                extracted.items.forEach((item, index) => {
+                    html += '<div class="task-item">';
+                    html += '<div class="task-title">Task ' + (index + 1) + ': ' + item.title + '</div>';
+                    html += '<div class="task-type">Type: ' + item.type + '</div>';
+                    if (item.due_date) {
+                        const dateObj = new Date(item.due_date);
+                        html += '<div class="task-date">📅 Due: ' + dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + '</div>';
+                    } else {
+                        html += '<div class="task-date">📅 No due date specified</div>';
+                    }
+                    html += '</div>';
+                });
+                html += '<div class="success">✅ Tasks extracted successfully! You can now add these to your task manager.</div>';
+            } else {
+                html += '<div class="error">❌ No tasks found. Try phrases like "Call Mom tomorrow" or "Meeting next Friday at 2pm"</div>';
+            }
+            
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+
+        function loadExample() {
+            const examples = [
+                "Call Mom tomorrow at 5pm",
+                "Meeting next Friday at 2pm with the team",
+                "I need to submit the report by Monday",
+                "Remind me to pay bills in 3 days",
+                "Doctor appointment tonight at 7pm"
+            ];
+            const randomExample = examples[Math.floor(Math.random() * examples.length)];
+            document.getElementById('textInput').value = randomExample;
+            extractTasks();
+        }
+
+        // Load example on page load
+        window.onload = function() {
+            loadExample();
+        };
+    </script>
+</body>
+</html>
