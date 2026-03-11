@@ -22,6 +22,14 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
     setError(null);
     setMessage(null);
 
+    // Demo mode - bypass authentication for testing
+    if (email === 'demo@voxvalt.com' && password === 'demo123') {
+      setMessage('Demo mode activated! Welcome to VoxValt.');
+      onAuthSuccess?.();
+      setLoading(false);
+      return;
+    }
+
     try {
       if (isSignUp) {
         const { data, error } = await supabase.auth.signUp({
@@ -193,6 +201,10 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
         {message && <div style={styles.success}>{message}</div>}
 
         <form onSubmit={handleSubmit}>
+          <div style={{...styles.formGroup, fontSize: '0.85rem', color: '#666', marginBottom: '0.5rem'}}>
+            💡 <strong>Demo Mode:</strong> Use demo@voxvalt.com / demo123
+          </div>
+
           <div style={styles.formGroup}>
             <label style={styles.label}>Email</label>
             <input
