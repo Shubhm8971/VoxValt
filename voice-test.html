@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VoxValt Direct Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .test { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 10px 0; }
+        button:hover { background: #5568d3; }
+        .result { background: #f5f5f5; padding: 15px; border-radius: 4px; margin: 10px 0; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .task-item { background: #e8f4fd; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #2196f3; }
+    </style>
+</head>
+<body>
+    <h1>🎙️ VoxValt Direct Task Test</h1>
+    
+    <div class="test">
+        <h2>Simulate Voice Recording</h2>
+        <p>This simulates what happens when you record voice in VoxValt:</p>
+        
+        <input type="text" id="testInput" placeholder="e.g., Call Mom tomorrow at 5pm" value="Call Mom tomorrow at 5pm" />
+        <button onclick="simulateVoiceRecording()">Simulate Voice Recording</button>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // Copy the exact extraction logic from VoxValt VoiceRecorder
+        function extractTasksFromTranscript(transcript) {
+            console.log('[WORKING] Extracting from transcript:', transcript);
+
+            const extractedItems = [];
+
+            const patterns = [
+                { regex: /(?:i need to|need to|should|must|gotta|have to)\s+([^.!?]+)/gi, type: 'task' },
+                { regex: /(?:todo|task)[\s:]*([^.!?]+)/gi, type: 'task' },
+                { regex: /(?:remind me|reminder|remember to)\s+([^.!?]+(?:at|on|by|tomorrow|next|today)?)/gi, type: 'reminder' },
+                { regex: /(?:call|contact|email|text)\s+([^.!?]+(?:at|on|by|tomorrow|next|today)?)/gi, type: 'reminder' },
+                { regex: /(?:i will|i'll|i am going to|imma)\s+([^.!?]+)/gi, type: 'task' },
+                { regex: /(?:i promise|i'll make sure|i guarantee)\s+([^.!?]+)/gi, type: 'promise' },
+                { regex: /(?:every|daily|weekly|monthly|always)\s+([^.!?]+)/gi, type: 'recurring' },
+            ];
+
+            patterns.forEach(({ regex, type }) => {
+                let match;
+                regex.lastIndex = 0;
+                while ((match = regex.exec(transcript)) !== null) {
+                    const content = match[1].trim();
+                    
+                    // Extract date from the content
+                    const dateExtraction = extractDateFromText(content);
+                    
+                    extractedItems.push({
+                        title: content,
+                        description: content,
+                        type: type,
+                        due_date: dateExtraction.date,
+                        people_involved: [],
+                        context: transcript
+                    });
+                }
+            });
+
+            return {
+                summary: extractedItems.length > 0
+                    ? `Extracted ${extractedItems.length} task(s) from local transcript`
+                    : 'Processed as voice memory',
+                items: extractedItems,
+                tags: [],
+                sentiment: 'neutral'
+            };
+        }
+
+        // Copy the date extraction logic
+        function extractDateFromText(text) {
+            const textLower = text.toLowerCase().trim();
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            // TOMORROW
+            if (/\btomorrow\b/.test(textLower)) {
+                return {
+                    date: tomorrow.toISOString().split('T')[0],
+                    time: null,
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            // TONIGHT
+            if (/\b(today|tonight)\b/.test(textLower)) {
+                return {
+                    date: today.toISOString().split('T')[0],
+                    time: '20:00',
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            return {
+                date: null,
+                time: null,
+                confidence: 'low',
+                original: text,
+            };
+        }
+
+        function simulateVoiceRecording() {
+            const input = document.getElementById('testInput').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!input.trim()) {
+                resultDiv.innerHTML = '<p class="error">Please enter some text to test</p>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>🎙️ Simulating voice recording...</p>';
+
+            setTimeout(() => {
+                const extracted = extractTasksFromTranscript(input);
+                
+                let html = '<h3>🎯 Voice Recording Results:</h3>';
+                html += '<p><strong>Transcript:</strong> ' + input + '</p>';
+                html += '<p><strong>Summary:</strong> ' + extracted.summary + '</p>';
+                
+                if (extracted.items.length > 0) {
+                    html += '<h4>📋 Extracted Tasks:</h4>';
+                    extracted.items.forEach((item, index) => {
+                        html += '<div class="task-item">';
+                        html += '<strong>Task ' + (index + 1) + ':</strong> ' + item.title + '<br>';
+                        html += '<strong>Type:</strong> ' + item.type + '<br>';
+                        html += '<strong>Due Date:</strong> ' + (item.due_date || 'No date') + '<br>';
+                        html += '<strong>Description:</strong> ' + item.description;
+                        html += '</div>';
+                    });
+                } else {
+                    html += '<p class="error">❌ No tasks extracted</p>';
+                }
+                
+                resultDiv.innerHTML = html;
+            }, 1000);
+        }
+
+        // Test automatically on load
+        window.onload = function() {
+            simulateVoiceRecording();
+        };
+    </script>
+</body>
+</html>

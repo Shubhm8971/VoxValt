@@ -176,8 +176,10 @@ export default function VoiceRecorder({
 
     // API Processing
     const processRecording = useCallback(async (audioBlob: Blob, recordingDuration: number) => {
+        console.log('[WORKING] Starting processRecording...');
         setStatus('processing');
         const transcript = currentTranscript.trim();
+        console.log('[WORKING] Current transcript:', transcript);
 
         // Bug #4 Fix: Reset status when transcript is empty — prevents frozen spinner
         if (!transcript) {
@@ -231,11 +233,21 @@ export default function VoiceRecorder({
             }
         } catch (apiError) {
             console.error('[WORKING] API failure, falling back to local extraction:', apiError);
-            const localExtracted = extractTasksFromTranscript(transcript);
-            setResult(localExtracted);
-            setStatus('success');
-            if (localExtracted.items.length > 0) {
-                onTasksExtracted?.(localExtracted.items as Task[]);
+            try {
+                const localExtracted = extractTasksFromTranscript(transcript);
+                console.log('[WORKING] Local extraction result:', localExtracted);
+                setResult(localExtracted);
+                setStatus('success');
+                if (localExtracted.items.length > 0) {
+                    console.log('[WORKING] Calling onTasksExtracted with items:', localExtracted.items);
+                    onTasksExtracted?.(localExtracted.items as Task[]);
+                } else {
+                    console.log('[WORKING] No items extracted from transcript');
+                }
+            } catch (localError) {
+                console.error('[WORKING] Local extraction failed:', localError);
+                setStatus('error');
+                setError('Failed to extract tasks from voice');
             }
         }
     }, [currentTranscript, session?.access_token, selectedTeamId, extractTasksFromTranscript, onTasksExtracted, onSettingsAction, isAmbientMode, isFocusMode]);
