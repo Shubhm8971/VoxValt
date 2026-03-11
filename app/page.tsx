@@ -10,7 +10,7 @@ import { Dashboard } from './components/Dashboard';
 import { MemoryArchive } from './components/MemoryArchive';
 import { ExtractedTasksList } from './components/ExtractedTasksList';
 import { saveTasksToDatabase } from '@/lib/client-save';
-// import { useAuth } from '@/lib/auth-context'; // Temporarily disabled for build
+import { useAuth } from '@/lib/auth-context';
 import { useWindowSize, breakpoints } from '@/lib/use-responsive';
 import { useSWEvent } from '@/lib/use-sw-events';
 import { SW_EVENTS } from './components/ServiceWorkerInitializer';
@@ -30,19 +30,7 @@ type ActiveTab = 'record' | 'dashboard' | 'teams' | 'archive';
 // Main Page Component
 // ============================================
 export default function Home() {
-  // const { user, loading, signOut } = useAuth(); // Temporarily disabled for build
-  const user = { 
-    id: 'demo-user', 
-    email: 'demo@example.com',
-    user_metadata: {
-      full_name: 'Demo User',
-      name: 'Demo User',
-      avatar_url: ''
-    },
-    phone: ''
-  }; // Mock user for build
-  const loading = false;
-  const signOut = () => {};
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const windowSize = useWindowSize();
   const isMobile = windowSize.width < breakpoints.tablet;
