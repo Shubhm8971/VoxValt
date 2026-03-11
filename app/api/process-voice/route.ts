@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { generateEmbedding } from '@/lib/ai-extract';
+import { extractDateFromText } from '@/lib/date-extractor';
 import { saveMemo, saveRecording, saveTasks, getOrCreateBoard, getReportData } from '@/lib/db';
 import { uploadAudioToStorage } from '@/lib/storage';
 import { transcribeWithGroq, extractWithGroq } from '@/lib/groq';
@@ -292,6 +293,15 @@ export async function POST(req: NextRequest) {
             // Filter out actionable items to save to 'tasks' table
             const actionableTypes = ['task', 'promise', 'reminder', 'recurring'];
             const actionableItems = extracted.items.filter((item: any) => actionableTypes.includes(item.type));
+
+            // Add date extraction to each actionable item
+            for (const item of actionableItems) {
+                const dateExtraction = extractDateFromText(item.content);
+                if (dateExtraction.date) {
+                    item.due_date = dateExtraction.date;
+                    console.log(`[API] Date extracted for "${item.content}": ${dateExtraction.date}`);
+                }
+            }
 
             if (actionableItems.length > 0) {
                 for (const item of actionableItems) {
