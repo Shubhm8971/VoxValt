@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-// import VoiceRecorder from './components/VoiceRecorder'; // Temporarily disabled for build
+import VoiceRecorder from './components/VoiceRecorder';
 import { useTheme } from 'next-themes';
 import { Dashboard } from './components/Dashboard';
 // import { TeamManager } from './components/TeamManager'; // Temporarily disabled for build
@@ -305,9 +305,10 @@ export default function Home() {
         <div className="pb-8 pb-safe page-transition">
           {activeTab === 'record' ? (
             <div className="animate-fade-in-up">
-              <div className="text-center py-8 text-gray-500">
-                Voice Recorder temporarily disabled for build
-              </div>
+              <VoiceRecorder 
+                onTasksExtracted={handleTasksExtracted}
+                compact={isMobile}
+              />
               {extractedTasks.length > 0 && (
                 <div className="max-w-4xl mx-auto px-4 sm:px-6">
                   <ExtractedTasksList 
