@@ -8,6 +8,7 @@ import { fetchTeams } from '@/lib/api-client';
 import { useRecordingLimit } from '@/hooks/useSubscription';
 import UpgradePrompt from './UpgradePrompt';
 import { RecordingLimitBanner } from './UpgradePrompt';
+import { extractDateFromText } from '@/lib/date-extractor';
 
 // Constants
 const MAX_RECORDING_SECONDS = 300;
@@ -148,11 +149,15 @@ export default function VoiceRecorder({
             regex.lastIndex = 0;
             while ((match = regex.exec(transcript)) !== null) {
                 const content = match[1].trim();
+                
+                // Extract date from the content
+                const dateExtraction = extractDateFromText(content);
+                
                 extractedItems.push({
                     title: content,
                     description: content,
                     type: type as any,
-                    due_date: null,
+                    due_date: dateExtraction.date,
                     people_involved: [],
                     context: transcript
                 });
