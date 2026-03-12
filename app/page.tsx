@@ -318,6 +318,8 @@ export default function Home() {
                     />
                     <button
                       onClick={async () => {
+                        alert('Test button clicked!');
+                        console.log('[QUICK TEST] Button clicked');
                         const input = document.getElementById('quickTestInput') as HTMLInputElement;
                         const testText = input.value.trim();
                         if (testText) {
