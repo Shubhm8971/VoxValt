@@ -353,6 +353,10 @@ export default function Home() {
                             setExtractedTasks(tasksWithDates);
                             console.log('[QUICK TEST] Tasks created:', tasksWithDates);
                             alert(`Successfully extracted ${tasksWithDates.length} task(s)!`);
+                            console.log('[QUICK TEST] Tasks created:', tasksWithDates);
+                            console.log('[QUICK TEST] extractedTasks state will be updated');
+                            setExtractedTasks(tasksWithDates);
+                            console.log('[QUICK TEST] extractedTasks state updated');
                           } else {
                             console.log('[QUICK TEST] No tasks extracted');
                             alert('No tasks could be extracted from the text. Try something like "Call Mom tomorrow at 5pm"');
@@ -366,6 +370,20 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+
+              {/* Simple Debug Display */}
+              {extractedTasks.length > 0 && (
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 mt-4">
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
+                    <h3 className="text-sm font-medium text-green-400 mb-2">Extracted Tasks ({extractedTasks.length})</h3>
+                    {extractedTasks.map((task, index) => (
+                      <div key={task.id} className="text-xs text-vox-text mb-1">
+                        {index + 1}. {task.title} {task.due_date && `(Due: ${task.due_date})`}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : activeTab === 'archive' ? (
             <div className="animate-fade-in-up">
