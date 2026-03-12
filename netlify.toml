@@ -9,4 +9,4 @@
 
 # Next.js plugin handles API routes automatically
 [[plugins]]
-  package = "@netlify/next"
+  package = "@netlify/plugin-nextjs"
