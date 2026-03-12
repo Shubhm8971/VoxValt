@@ -47,6 +47,7 @@
     "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@netlify/next": "^1.0.0",
     "@types/node": "^22.10.5",
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19.0.6",

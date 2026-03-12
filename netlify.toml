@@ -6,23 +6,7 @@
   NODE_VERSION = "18"
   # Temporarily disable secrets scanner for deployment
   SECRETS_SCAN_ENABLED = "false"
-  # Force rebuild for API routes
-  NETLIFY_BUILD_VERSION = "2"
 
-# Handle Next.js serverless functions
-[functions]
-  directory = ".next"
-  node_bundler = "esbuild"
-
-# Redirects for API routes to serverless functions  
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-# Handle client-side routing
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = false
+# Next.js plugin handles API routes automatically
+[[plugins]]
+  package = "@netlify/next"
