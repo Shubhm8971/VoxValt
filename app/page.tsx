@@ -318,7 +318,6 @@ export default function Home() {
                     />
                     <button
                       onClick={async () => {
-                        alert('Test button clicked!');
                         console.log('[QUICK TEST] Button clicked');
                         const input = document.getElementById('quickTestInput') as HTMLInputElement;
                         const testText = input.value.trim();
@@ -353,8 +352,10 @@ export default function Home() {
                             
                             setExtractedTasks(tasksWithDates);
                             console.log('[QUICK TEST] Tasks created:', tasksWithDates);
+                            alert(`Successfully extracted ${tasksWithDates.length} task(s)!`);
                           } else {
                             console.log('[QUICK TEST] No tasks extracted');
+                            alert('No tasks could be extracted from the text. Try something like "Call Mom tomorrow at 5pm"');
                           }
                         }
                       }}
