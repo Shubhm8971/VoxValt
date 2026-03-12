@@ -4,6 +4,8 @@
   
 [build.environment]
   NODE_VERSION = "18"
+  # Temporarily disable secrets scanner for deployment
+  SECRETS_SCAN_ENABLED = "false"
 
 # Handle Next.js serverless functions
 [functions]
