@@ -327,6 +327,8 @@ export default function Home() {
                           // Use real extraction logic
                           const extractedResult = await extractTasksFromTranscription(testText);
                           console.log('[QUICK TEST] Extraction result:', extractedResult);
+                          console.log('[QUICK TEST] Original text:', testText);
+                          console.log('[QUICK TEST] Extracted tasks:', extractedResult.tasks);
                           
                           if (extractedResult.tasks.length > 0) {
                             // Apply date extraction to each item
