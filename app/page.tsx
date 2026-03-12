@@ -332,6 +332,7 @@ export default function Home() {
                             // Apply date extraction to each item
                             const tasksWithDates = extractedResult.tasks.map((item: any) => {
                               const dateExtraction = extractDateFromText(item.title);
+                              console.log('[QUICK TEST] Date extraction for:', item.title, '=>', dateExtraction);
                               return {
                                 id: 'test-' + Date.now() + '-' + Math.random(),
                                 title: item.title,
