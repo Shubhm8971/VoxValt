@@ -125,7 +125,30 @@ export default function Home() {
     return '🌙 Good night';
   };
 
-  const handleTasksExtracted = (tasks: Task[]) => {
+  // Simple rule-based extraction function
+function extractTasksUsingSimpleRules(text: string) {
+  const tasks = [];
+  
+  // If the text contains action words, treat the whole text as a task
+  const actionWords = ['call', 'email', 'text', 'meet', 'buy', 'pay', 'go', 'do', 'finish', 'start'];
+  const hasActionWord = actionWords.some(word => text.toLowerCase().includes(word));
+  
+  if (hasActionWord) {
+    tasks.push({
+      title: text,
+      description: '',
+      type: 'task',
+      due_date: null
+    });
+  }
+  
+  return {
+    tasks,
+    summary: `Extracted ${tasks.length} task(s) using rules`
+  };
+}
+
+const handleTasksExtracted = (tasks: Task[]) => {
     if (tasks.length > 0) {
       setExtractedTasks(tasks);
       setDashboardKey(prev => prev + 1);
@@ -324,8 +347,8 @@ export default function Home() {
                         if (testText) {
                           console.log('[QUICK TEST] Processing:', testText);
                           
-                          // Use real extraction logic
-                          const extractedResult = await extractTasksFromTranscription(testText);
+                          // Use simple rule-based extraction instead of AI
+                          const extractedResult = extractTasksUsingSimpleRules(testText);
                           console.log('[QUICK TEST] Extraction result:', extractedResult);
                           console.log('[QUICK TEST] Original text:', testText);
                           console.log('[QUICK TEST] Extracted tasks:', extractedResult.tasks);
