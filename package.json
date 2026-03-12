@@ -4,16 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "set NODE_OPTIONS=--max-old-space-size=4096 && next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.33.0",
+    "@doist/todoist-api-typescript": "^7.0.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@google/generative-ai": "^0.21.0",
     "@next-auth/supabase-adapter": "^0.2.1",
+    "@notionhq/client": "^5.12.0",
     "@supabase/auth-helpers-nextjs": "^0.15.0",
     "@supabase/auth-helpers-react": "^0.15.0",
     "@supabase/supabase-js": "^2.48.1",

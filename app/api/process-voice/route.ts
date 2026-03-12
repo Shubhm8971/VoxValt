@@ -7,7 +7,7 @@ import { extractDateFromText } from '@/lib/date-extractor';
 import { saveMemo, saveRecording, saveTasks, getOrCreateBoard, getReportData } from '@/lib/db';
 import { uploadAudioToStorage } from '@/lib/storage';
 import { transcribeWithGroq, extractWithGroq } from '@/lib/groq';
-import { syncMultipleTasks } from '@/lib/calendar-sync';
+import { syncTaskToIntegrations } from '@/lib/integration-sync';
 import { NotificationScheduler } from '@/lib/notification-scheduler';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE__GENERATIVE_AI_API_KEY!);
@@ -319,11 +319,19 @@ export async function POST(req: NextRequest) {
                             recurrence: item.recurrence || null,
                         }], teamId || undefined, itemBoardId);
 
-                        // 5b. Real-time Calendar Sync
+                        // 5b. Real-time Integration Sync
                         try {
-                            await syncMultipleTasks(userId, savedTasks);
+                            for (const savedTask of savedTasks) {
+                                await syncTaskToIntegrations(userId, {
+                                    id: savedTask.id,
+                                    title: savedTask.title,
+                                    description: savedTask.description || '',
+                                    task_type: savedTask.task_type as any,
+                                    due_date: savedTask.due_date
+                                });
+                            }
                         } catch (syncError) {
-                            console.error('Real-time calendar sync failed (non-fatal):', syncError);
+                            console.error('Real-time integration sync failed (non-fatal):', syncError);
                         }
 
                         // 5c. Schedule Notifications

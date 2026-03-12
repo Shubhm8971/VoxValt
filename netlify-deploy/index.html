@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoxValt - Voice Task Extraction | Working Demo</title>
+    <meta name="description" content="Extract tasks and dates from voice or text input. Working demo of VoxValt's AI-powered task extraction.">
+    <meta name="keywords" content="task extraction, voice to text, AI assistant, date extraction, task management">
+    <meta name="author" content="VoxValt">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="VoxValt - Voice Task Extraction">
+    <meta property="og:description" content="Extract tasks and dates from voice or text input with AI">
+    <meta property="og:image" content="">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="VoxValt - Voice Task Extraction">
+    <meta property="twitter:description" content="Extract tasks and dates from voice or text input with AI">
+    <meta property="twitter:image" content="">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; max-width: 900px; margin: 0 auto; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.15); margin: 20px 0; }
+        h1 { color: #333; text-align: center; margin-bottom: 10px; font-size: 2.5em; font-weight: 700; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 40px; font-size: 1.2em; }
+        .voice-section { background: #f8f9fa; padding: 30px; border-radius: 15px; margin: 30px 0; border: 2px dashed #667eea; }
+        .voice-title { font-size: 1.3em; font-weight: 600; color: #667eea; margin-bottom: 15px; text-align: center; }
+        .voice-placeholder { background: white; padding: 20px; border-radius: 10px; text-align: center; color: #666; border: 1px solid #e0e0e0; }
+        .input-area { margin: 30px 0; }
+        textarea { width: 100%; height: 120px; padding: 20px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 16px; resize: vertical; transition: all 0.3s; font-family: inherit; }
+        textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .button-group { display: flex; gap: 15px; margin: 25px 0; flex-wrap: wrap; justify-content: center; }
+        button { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px 30px; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
+        button:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); }
+        .secondary { background: #f8f9fa; color: #333; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .secondary:hover { background: #e9ecef; transform: translateY(-1px); }
+        .result { margin: 30px 0; padding: 25px; background: #f8f9fa; border-radius: 15px; border-left: 5px solid #667eea; }
+        .task-item { background: white; padding: 25px; margin: 15px 0; border-radius: 12px; border-left: 4px solid #28a745; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: all 0.3s; }
+        .task-item:hover { transform: translateX(5px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+        .task-title { font-weight: 700; color: #333; font-size: 1.2em; margin-bottom: 10px; }
+        .task-date { color: #28a745; font-size: 15px; margin-top: 10px; font-weight: 600; background: #d4edda; padding: 8px 12px; border-radius: 6px; display: inline-block; }
+        .task-type { display: inline-block; padding: 8px 16px; background: #e3f2fd; color: #1976d2; border-radius: 20px; font-size: 13px; margin-top: 12px; font-weight: 600; }
+        .error { color: #dc3545; background: #f8d7da; padding: 20px; border-radius: 10px; border-left: 4px solid #dc3545; }
+        .success { color: #155724; background: #d4edda; padding: 20px; border-radius: 10px; border-left: 4px solid #28a745; font-weight: 600; }
+        .examples { background: #f8f9fa; padding: 25px; border-radius: 15px; margin: 25px 0; }
+        .example-item { background: white; padding: 12px 18px; margin: 10px 0; border-radius: 8px; border-left: 3px solid #667eea; cursor: pointer; transition: all 0.2s; }
+        .example-item:hover { background: #f0f0f0; transform: translateX(3px); }
+        .stats { display: flex; gap: 25px; margin: 25px 0; justify-content: center; flex-wrap: wrap; }
+        .stat { text-align: center; padding: 20px; background: white; border-radius: 12px; min-width: 120px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .stat-number { font-size: 28px; font-weight: 700; color: #667eea; }
+        .stat-label { font-size: 13px; color: #666; text-transform: uppercase; margin-top: 5px; }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0; }
+        .feature { background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .feature-icon { font-size: 2em; margin-bottom: 10px; }
+        .feature-title { font-weight: 600; color: #333; margin-bottom: 8px; }
+        .feature-desc { color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>VoxValt</h1>
+        <p class="subtitle">Voice Task Extraction - Working Demo</p>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🎙️</div>
+                <div class="feature-title">Voice Recording</div>
+                <div class="feature-desc">Coming Soon - Full voice integration</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📅</div>
+                <div class="feature-title">Date Extraction</div>
+                <div class="feature-desc">Working - Extracts dates from text</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-title">Task Recognition</div>
+                <div class="feature-desc">Working - Identifies tasks & reminders</div>
+            </div>
+        </div>
+        
+        <div class="voice-section">
+            <div class="voice-title">Voice Recording Section</div>
+            <div class="voice-placeholder">
+                <strong>Voice recording temporarily disabled</strong><br>
+                Use the text input below to test task extraction<br>
+                <small>This bypasses microphone issues while we fix the recording flow</small>
+            </div>
+        </div>
+        
+        <div class="examples">
+            <h3>Try These Priority & Category Examples:</h3>
+            <div class="example-item" onclick="loadExample('Urgent call Mom tomorrow at 5pm')">🔴 Urgent call Mom tomorrow at 5pm</div>
+            <div class="example-item" onclick="loadExample('Meeting next Friday at 2pm with the team')">💼 Meeting next Friday at 2pm with the team</div>
+            <div class="example-item" onclick="loadExample('Doctor appointment tonight at 7pm')">🏥 Doctor appointment tonight at 7pm</div>
+            <div class="example-item" onclick="loadExample('Grocery shopping this Saturday morning')">🛒 Grocery shopping this Saturday morning</div>
+            <div class="example-item" onclick="loadExample('Study for exam next week')">📚 Study for exam next week</div>
+            <div class="example-item" onclick="loadExample('Family dinner on Sunday')">👤 Family dinner on Sunday</div>
+            <div class="example-item" onclick="loadExample('Critical project deadline tomorrow')">🔴 Critical project deadline tomorrow</div>
+            <div class="example-item" onclick="loadExample('Buy groceries sometime this week')">🛒 Buy groceries sometime this week</div>
+            <div class="example-item" onclick="loadExample('Team lunch this Tuesday at 1pm')">💼 Team lunch this Tuesday at 1pm</div>
+            <div class="example-item" onclick="loadExample('Dentist appointment in 1 month at 3pm')">🏥 Dentist appointment in 1 month at 3pm</div>
+            <div class="example-item" onclick="loadExample('Call friend for coffee later')">👤 Call friend for coffee later</div>
+            <div class="example-item" onclick="loadExample('Work presentation Monday at 10am')">💼 Work presentation Monday at 10am</div>
+        </div>
+        
+        <div class="input-area">
+            <textarea id="textInput" placeholder="Type any task with dates/times, e.g., 'Call Mom tomorrow at 5pm'"></textarea>
+            <div class="button-group">
+                <button onclick="extractTasks()">Extract Tasks</button>
+                <button class="secondary" onclick="clearAll()">Clear</button>
+                <button class="secondary" onclick="loadRandomExample()">Random Example</button>
+                <button class="secondary" onclick="loadAndDisplaySavedTasks()">📂 Load Saved</button>
+                <button class="secondary" onclick="testFunction()" style="background: #dc3545;">🧪 Test JS</button>
+            </div>
+        </div>
+        
+        <div id="result"></div>
+        
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat">
+                <div class="stat-number" id="taskCount">0</div>
+                <div class="stat-label">Tasks Found</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="dateCount">0</div>
+                <div class="stat-label">With Dates</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="typeCount">0</div>
+                <div class="stat-label">Task Types</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Debug: Show when script loads
+        console.log('VoxValt script loaded successfully!');
+        
+        let totalTests = 0;
+        let successfulExtractions = 0;
+
+        // Core functions - define these FIRST
+        function loadExample(text) {
+            console.log('loadExample called with:', text);
+            document.getElementById('textInput').value = text;
+            const extracted = extractTasksFromText(text);
+            displayResults(extracted, text);
+        }
+
+        function extractTasks() {
+            console.log('extractTasks called');
+            const input = document.getElementById('textInput').value.trim();
+            
+            if (!input) {
+                showNotification('Please enter some text to extract tasks from', 'error');
+                return;
+            }
+            
+            totalTests++;
+            
+            const extracted = extractTasksFromText(input);
+            
+            if (extracted.items.length > 0) {
+                successfulExtractions++;
+            }
+            
+            displayResults(extracted, input);
+        }
+
+        function clearAll() {
+            console.log('clearAll called');
+            document.getElementById('textInput').value = '';
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('stats').style.display = 'none';
+        }
+
+        function loadRandomExample() {
+            console.log('loadRandomExample called');
+            const examples = [
+                "Urgent call Mom tomorrow at 5pm",
+                "Meeting next Friday at 2pm with the team",
+                "Doctor appointment tonight at 7pm",
+                "Grocery shopping this Saturday morning",
+                "Study for exam next week",
+                "Family dinner on Sunday",
+                "Critical project deadline tomorrow",
+                "Buy groceries sometime this week",
+                "Team lunch this Tuesday at 1pm",
+                "Dentist appointment in 1 month at 3pm",
+                "Call friend for coffee later",
+                "Work presentation Monday at 10am"
+            ];
+            const randomExample = examples[Math.floor(Math.random() * examples.length)];
+            loadExample(randomExample);
+        }
+
+        function loadAndDisplaySavedTasks() {
+            console.log('loadAndDisplaySavedTasks called');
+            const savedTasks = loadTasksFromBrowser();
+            
+            if (savedTasks && savedTasks.length > 0) {
+                const extracted = {
+                    summary: `Loaded ${savedTasks.length} saved task(s)`,
+                    items: savedTasks,
+                    tags: [],
+                    sentiment: 'neutral'
+                };
+                
+                displayResults(extracted, 'Loaded from browser storage');
+            }
+        }
+
+        function testFunction() {
+            console.log('Test function called!');
+            alert('JavaScript is working! Test successful!');
+        }
+
+        // Priority detection logic
+        function detectPriority(text) {
+            const textLower = text.toLowerCase();
+            
+            // High priority indicators
+            const highPriorityPatterns = [
+                /urgent|emergency|asap|immediately|critical|important/i,
+                /deadline|due today|must do|need to/i,
+                /call.*doctor|doctor.*appointment|hospital|emergency/i
+            ];
+            
+            // Low priority indicators  
+            const lowPriorityPatterns = [
+                /sometime|eventually|later|when.*free|maybe|consider/i,
+                /wishlist|nice to have|optional|can wait/i
+            ];
+            
+            for (const pattern of highPriorityPatterns) {
+                if (pattern.test(textLower)) return 'high';
+            }
+            
+            for (const pattern of lowPriorityPatterns) {
+                if (pattern.test(textLower)) return 'low';
+            }
+            
+            return 'medium'; // Default
+        }
+
+        // Category detection logic
+        function detectCategory(text) {
+            const textLower = text.toLowerCase();
+            
+            const categories = {
+                work: [
+                    /meeting|project|deadline|report|presentation|client|boss|team|office|work|job/i,
+                    /submit|deliver|review|presentation|interview|conference|training/i
+                ],
+                personal: [
+                    /family|friend|mom|dad|brother|sister|wife|husband|partner|home|personal/i,
+                    /birthday|anniversary|celebration|party|social|call.*mom|call.*dad/i
+                ],
+                health: [
+                    /doctor|dentist|hospital|medical|appointment|checkup|medicine|health/i,
+                    /exercise|gym|workout|fitness|diet|nutrition|therapy/i
+                ],
+                shopping: [
+                    /shopping|grocery|store|market|buy|purchase|mall|shop|amazon/i,
+                    /groceries|food|supplies|clothes|electronics|furniture/i
+                ],
+                learning: [
+                    /study|learn|course|class|book|reading|tutorial|education|school/i,
+                    /exam|test|assignment|homework|research|practice/i
+                ]
+            };
+            
+            for (const [category, patterns] of Object.entries(categories)) {
+                for (const pattern of patterns) {
+                    if (pattern.test(textLower)) return category;
+                }
+            }
+            
+            return 'personal'; // Default category
+        }
+
+        // Get priority display info
+        function getPriorityInfo(priority) {
+            const priorityMap = {
+                high: { icon: '🔴', label: 'High', color: '#dc3545', bgColor: '#f8d7da' },
+                medium: { icon: '🟡', label: 'Medium', color: '#ffc107', bgColor: '#fff3cd' },
+                low: { icon: '🟢', label: 'Low', color: '#28a745', bgColor: '#d4edda' }
+            };
+            return priorityMap[priority] || priorityMap.medium;
+        }
+
+        // Export and save functions
+        function generateTaskText(tasks) {
+            if (!tasks || tasks.length === 0) return '';
+            
+            let text = '📋 VOXVALT EXTRACTED TASKS\n';
+            text += 'Generated: ' + new Date().toLocaleString() + '\n';
+            text += '─'.repeat(50) + '\n\n';
+            
+            tasks.forEach((task, index) => {
+                const priorityInfo = getPriorityInfo(task.priority);
+                const categoryInfo = getCategoryInfo(task.category);
+                
+                text += `${index + 1}. ${task.title}\n`;
+                text += `   ${priorityInfo.icon} Priority: ${priorityInfo.label}\n`;
+                text += `   ${categoryInfo.icon} Category: ${categoryInfo.label}\n`;
+                text += `   📝 Type: ${task.type}\n`;
+                
+                if (task.due_date) {
+                    const dateObj = new Date(task.due_date);
+                    const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                    
+                    if (task.time) {
+                        const timeStr = task.time;
+                        const [hours, minutes] = timeStr.split(':');
+                        const timeObj = new Date();
+                        timeObj.setHours(parseInt(hours), parseInt(minutes));
+                        const formattedTime = timeObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                        text += `   📅 Due: ${dateStr} at ${formattedTime}\n`;
+                    } else {
+                        text += `   📅 Due: ${dateStr}\n`;
+                    }
+                }
+                text += '\n';
+            });
+            
+            text += '─'.repeat(50) + '\n';
+            text += 'Generated by VoxValt - Voice Task Extraction\n';
+            
+            return text;
+        }
+
+        function copyTasksToClipboard(tasks) {
+            const taskText = generateTaskText(tasks);
+            
+            if (!taskText) {
+                showNotification('No tasks to copy', 'error');
+                return;
+            }
+            
+            // Use prompt dialog - most basic and reliable method
+            prompt('📋 COPY YOUR TASKS:', taskText);
+            showNotification('Tasks displayed in dialog - copy from there!', 'info');
+        }
+
+        function fallbackCopyToClipboard(text) {
+            // Create a temporary textarea element
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed'; // Prevent scrolling to bottom
+            textarea.style.left = '-999999px';
+            textarea.style.top = '-999999px';
+            document.body.appendChild(textarea);
+            
+            // Select and copy
+            textarea.focus();
+            textarea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showNotification('Tasks copied to clipboard!', 'success');
+                } else {
+                    throw new Error('Copy command failed');
+                }
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+                // Show the text in a modal as last resort
+                showTextInModal(text);
+            }
+            
+            // Clean up
+            document.body.removeChild(textarea);
+        }
+
+        function showTextInModal(text) {
+            // Create modal overlay
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            // Create modal content
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                max-width: 80%;
+                max-height: 80%;
+                overflow: auto;
+                position: relative;
+            `;
+            
+            // Add header
+            const header = document.createElement('div');
+            header.innerHTML = `
+                <h3 style="margin: 0 0 15px 0; color: #333;">📋 Copy Tasks Manually</h3>
+                <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Your browser doesn't support automatic copying. Please select the text below and copy manually (Ctrl+C or Cmd+C):</p>
+            `;
+            content.appendChild(header);
+            
+            // Add text area with the tasks
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.cssText = `
+                width: 100%;
+                height: 300px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-family: monospace;
+                font-size: 12px;
+                resize: vertical;
+            `;
+            textarea.readOnly = true;
+            content.appendChild(textarea);
+            
+            // Add close button
+            const closeButton = document.createElement('button');
+            closeButton.textContent = 'Close';
+            closeButton.style.cssText = `
+                margin-top: 15px;
+                padding: 8px 16px;
+                background: #007bff;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                float: right;
+            `;
+            closeButton.onclick = () => {
+                document.body.removeChild(modal);
+            };
+            content.appendChild(closeButton);
+            
+            // Add instructions
+            const instructions = document.createElement('div');
+            instructions.innerHTML = `
+                <p style="margin: 15px 0 0 0; color: #666; font-size: 12px;">
+                    <strong>Tip:</strong> Click in the text area above, then press Ctrl+A (or Cmd+A on Mac) to select all, then Ctrl+C (or Cmd+C) to copy.
+                </p>
+            `;
+            content.appendChild(instructions);
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            // Auto-select the text
+            setTimeout(() => {
+                textarea.focus();
+                textarea.select();
+            }, 100);
+            
+            showNotification('Please copy the text manually from the popup', 'info');
+        }
+
+        function downloadTasksAsFile(tasks, format = 'txt') {
+            const taskText = generateTaskText(tasks);
+            
+            if (!taskText) {
+                showNotification('No tasks to download', 'error');
+                return;
+            }
+            
+            let content = taskText;
+            let mimeType = 'text/plain';
+            let fileName = `voxvalt-tasks-${new Date().toISOString().split('T')[0]}.${format}`;
+            
+            if (format === 'json') {
+                content = JSON.stringify(tasks, null, 2);
+                mimeType = 'application/json';
+                fileName = `voxvalt-tasks-${new Date().toISOString().split('T')[0]}.json`;
+            }
+            
+            const blob = new Blob([content], { type: mimeType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showNotification(`Tasks downloaded as ${format.toUpperCase()} file!`, 'success');
+        }
+
+        function saveTasksToBrowser(tasks) {
+            if (!tasks || tasks.length === 0) {
+                showNotification('No tasks to save', 'error');
+                return;
+            }
+            
+            const saveData = {
+                tasks: tasks,
+                timestamp: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            localStorage.setItem('voxvalt-saved-tasks', JSON.stringify(saveData));
+            showNotification('Tasks saved to browser!', 'success');
+        }
+
+        function loadTasksFromBrowser() {
+            const savedData = localStorage.getItem('voxvalt-saved-tasks');
+            
+            if (!savedData) {
+                showNotification('No saved tasks found', 'info');
+                return;
+            }
+            
+            try {
+                const data = JSON.parse(savedData);
+                const savedDate = new Date(data.timestamp);
+                const dateStr = savedDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                
+                showNotification(`Loaded ${data.tasks.length} tasks from ${dateStr}`, 'success');
+                return data.tasks;
+            } catch (err) {
+                console.error('Failed to load saved tasks:', err);
+                showNotification('Failed to load saved tasks', 'error');
+                return [];
+            }
+        }
+
+        function generateShareableEmail(tasks) {
+            const taskText = generateTaskText(tasks);
+            
+            if (!taskText) {
+                showNotification('No tasks to share', 'error');
+                return;
+            }
+            
+            const subject = encodeURIComponent('My VoxValt Tasks');
+            const body = encodeURIComponent(`Here are my tasks extracted by VoxValt:\n\n${taskText}`);
+            const emailUrl = `mailto:?subject=${subject}&body=${body}`;
+            
+            window.open(emailUrl, '_blank');
+            showNotification('Email client opened with tasks!', 'success');
+        }
+
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: '#28a745',
+                error: '#dc3545',
+                info: '#17a2b8',
+                warning: '#ffc107'
+            };
+            
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                background: ${colors[type]};
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-weight: 500;
+                animation: slideIn 0.3s ease-out;
+                max-width: 300px;
+            `;
+            notification.textContent = message;
+            
+            // Add animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        function getCategoryInfo(category) {
+            const categoryMap = {
+                work: { icon: '💼', label: 'Work', color: '#007bff', bgColor: '#cce5ff' },
+                personal: { icon: '👤', label: 'Personal', color: '#6f42c1', bgColor: '#e2d9f3' },
+                health: { icon: '🏥', label: 'Health', color: '#17a2b8', bgColor: '#d1ecf1' },
+                shopping: { icon: '🛒', label: 'Shopping', color: '#fd7e14', bgColor: '#ffe8cc' },
+                learning: { icon: '📚', label: 'Learning', color: '#20c997', bgColor: '#d3f9d8' }
+            };
+            return categoryMap[category] || categoryMap.personal;
+        }
+        function extractTimeFromText(text) {
+            const textLower = text.toLowerCase();
+            let matchedTime = null;
+            let confidence = 'low';
+
+            // Specific times: "at 5pm", "5pm", "at 2:30pm", "2:30pm"
+            const timePattern = /at\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)|(\d{1,2})(?::(\d{2}))?\s*(am|pm)/gi;
+            const timeMatch = timePattern.exec(text);
+            
+            if (timeMatch) {
+                let hours = parseInt(timeMatch[1] || timeMatch[4]);
+                const minutes = parseInt(timeMatch[2] || timeMatch[5] || '0');
+                const period = (timeMatch[3] || timeMatch[6] || '').toLowerCase();
+
+                // Convert to 24-hour format
+                if (period === 'pm' && hours !== 12) {
+                    hours += 12;
+                } else if (period === 'am' && hours === 12) {
+                    hours = 0;
+                }
+
+                matchedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                confidence = 'high';
+            }
+
+            // Simple hour: "at 5", "5 o'clock"
+            const hourPattern = /at\s+(\d{1,2})\s*(?:o'clock)?|(\d{1,2})\s*(?:o'clock)/gi;
+            const hourMatch = hourPattern.exec(text);
+            
+            if (hourMatch && !matchedTime) {
+                let hours = parseInt(hourMatch[1] || hourMatch[2]);
+                
+                // Default to reasonable hours if not specified
+                if (hours >= 1 && hours <= 6) hours += 12; // 1-6 -> 13-18 (afternoon)
+                else if (hours === 12) hours = 12; // 12 -> 12 (noon)
+                else if (hours === 0) hours = 0; // 0 -> 0 (midnight)
+                else if (hours < 12) hours += 12; // 7-11 -> 19-23 (evening)
+                
+                matchedTime = `${hours.toString().padStart(2, '0')}:00`;
+                confidence = 'medium';
+            }
+
+            // Time of day patterns
+            const timeOfDayPatterns = [
+                { pattern: /\bmorning\b/i, time: '09:00', confidence: 'medium' },
+                { pattern: /\bnoon\b/i, time: '12:00', confidence: 'high' },
+                { pattern: /\bafternoon\b/i, time: '14:00', confidence: 'medium' },
+                { pattern: /\bevening\b/i, time: '18:00', confidence: 'medium' },
+                { pattern: /\bnight\b/i, time: '20:00', confidence: 'medium' },
+                { pattern: /\btonight\b/i, time: '20:00', confidence: 'high' },
+                { pattern: /\bmidnight\b/i, time: '00:00', confidence: 'high' },
+                { pattern: /\bdawn\b/i, time: '06:00', confidence: 'low' },
+                { pattern: /\bdusk\b/i, time: '18:00', confidence: 'low' }
+            ];
+
+            for (const { pattern, time, confidence: patternConfidence } of timeOfDayPatterns) {
+                if (pattern.test(textLower) && !matchedTime) {
+                    matchedTime = time;
+                    confidence = patternConfidence;
+                    break;
+                }
+            }
+
+            return {
+                time: matchedTime,
+                confidence: confidence,
+                original: text
+            };
+        }
+
+        // Enhanced date extraction logic (now with time integration)
+        function extractDateFromText(text) {
+            const textLower = text.toLowerCase().trim();
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            // Extract time first
+            const timeExtraction = extractTimeFromText(text);
+
+            // TOMORROW
+            if (/\btomorrow\b/.test(textLower)) {
+                const dateStr = tomorrow.toISOString().split('T')[0];
+                return {
+                    date: dateStr,
+                    time: timeExtraction.time,
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            // TONIGHT
+            if (/\b(today|tonight)\b/.test(textLower)) {
+                const dateStr = today.toISOString().split('T')[0];
+                return {
+                    date: dateStr,
+                    time: timeExtraction.time || '20:00',
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            // NEXT [DAY OF WEEK]
+            const dayPattern = /\bnext\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
+            const dayMatch = textLower.match(dayPattern);
+            if (dayMatch) {
+                const dayName = dayMatch[1].toLowerCase();
+                const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                const todayDay = today.getDay();
+                const targetDay = days.indexOf(dayName);
+                let daysUntilTarget = (targetDay - todayDay + 7) % 7;
+                if (daysUntilTarget === 0) daysUntilTarget = 7;
+                const nextDate = new Date(today);
+                nextDate.setDate(today.getDate() + daysUntilTarget);
+                return {
+                    date: nextDate.toISOString().split('T')[0],
+                    time: timeExtraction.time,
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            // THIS [DAY OF WEEK] (current week)
+            const thisDayPattern = /\bthis\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
+            const thisDayMatch = textLower.match(thisDayPattern);
+            if (thisDayMatch) {
+                const dayName = thisDayMatch[1].toLowerCase();
+                const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                const todayDay = today.getDay();
+                const targetDay = days.indexOf(dayName);
+                let daysUntilTarget = (targetDay - todayDay + 7) % 7;
+                if (daysUntilTarget === 0) daysUntilTarget = 7; // If today is that day, go to next week
+                const thisDate = new Date(today);
+                thisDate.setDate(today.getDate() + daysUntilTarget);
+                return {
+                    date: thisDate.toISOString().split('T')[0],
+                    time: timeExtraction.time,
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            // IN X DAYS/WEEKS/MONTHS
+            const inPattern = /\bin\s+(\d+)\s+(days?|weeks?|months?)\b/i;
+            const inMatch = textLower.match(inPattern);
+            if (inMatch) {
+                const number = parseInt(inMatch[1]);
+                const unit = inMatch[2].toLowerCase();
+                const futureDate = new Date(today);
+                
+                if (unit.startsWith('day')) {
+                    futureDate.setDate(today.getDate() + number);
+                } else if (unit.startsWith('week')) {
+                    futureDate.setDate(today.getDate() + (number * 7));
+                } else if (unit.startsWith('month')) {
+                    futureDate.setMonth(today.getMonth() + number);
+                }
+                
+                return {
+                    date: futureDate.toISOString().split('T')[0],
+                    time: timeExtraction.time,
+                    confidence: 'high',
+                    original: text,
+                };
+            }
+
+            // BY [DAY OF WEEK]
+            const byPattern = /\bby\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow|today)\b/i;
+            const byMatch = textLower.match(byPattern);
+            if (byMatch) {
+                const dayName = byMatch[1].toLowerCase();
+                const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                
+                if (dayName === 'tomorrow') {
+                    return {
+                        date: tomorrow.toISOString().split('T')[0],
+                        time: timeExtraction.time,
+                        confidence: 'high',
+                        original: text,
+                    };
+                } else if (dayName === 'today') {
+                    return {
+                        date: today.toISOString().split('T')[0],
+                        time: timeExtraction.time,
+                        confidence: 'high',
+                        original: text,
+                    };
+                } else {
+                    const todayDay = today.getDay();
+                    const targetDay = days.indexOf(dayName);
+                    let daysUntilTarget = (targetDay - todayDay + 7) % 7;
+                    if (daysUntilTarget === 0) daysUntilTarget = 7;
+                    const byDate = new Date(today);
+                    byDate.setDate(today.getDate() + daysUntilTarget);
+                    return {
+                        date: byDate.toISOString().split('T')[0],
+                        time: timeExtraction.time,
+                        confidence: 'high',
+                        original: text,
+                    };
+                }
+            }
+
+            // NEXT WEEK
+            if (/\bnext\s+week\b/i.test(textLower)) {
+                const nextWeek = new Date(today);
+                nextWeek.setDate(today.getDate() + 7);
+                return {
+                    date: nextWeek.toISOString().split('T')[0],
+                    time: timeExtraction.time,
+                    confidence: 'medium',
+                    original: text,
+                };
+            }
+
+            return {
+                date: null,
+                time: timeExtraction.time,
+                confidence: 'low',
+                original: text,
+            };
+        }
+
+        // Enhanced task extraction patterns
+        function extractTasksFromText(text) {
+            const extractedItems = [];
+
+            const patterns = [
+                // Original patterns
+                { regex: /(?:i need to|need to|should|must|gotta|have to)\s+([^.!?]+)/gi, type: 'task' },
+                { regex: /(?:todo|task)[\s:]*([^.!?]+)/gi, type: 'task' },
+                { regex: /(?:remind me|reminder|remember to)\s+([^.!?]+(?:at|on|by|tomorrow|next|today)?)/gi, type: 'reminder' },
+                { regex: /(?:call|contact|email|text)\s+([^.!?]+(?:at|on|by|tomorrow|next|today)?)/gi, type: 'reminder' },
+                { regex: /(?:i will|i'll|i am going to|imma)\s+([^.!?]+)/gi, type: 'task' },
+                { regex: /(?:i promise|i'll make sure|i guarantee)\s+([^.!?]+)/gi, type: 'promise' },
+                { regex: /(?:every|daily|weekly|monthly|always)\s+([^.!?]+)/gi, type: 'recurring' },
+                
+                // New flexible patterns - match standalone activities
+                { regex: /([^.!?]*(?:project|meeting|review|call|appointment|lunch|dinner|breakfast|deadline|presentation|interview|conference|workshop|training)[^.!?]*)/gi, type: 'task' },
+                { regex: /([^.!?]*(?:doctor|dentist|client|team|manager|boss|friend|family)[^.!?]*(?:call|meeting|appointment)[^.!?]*)/gi, type: 'reminder' },
+                { regex: /([^.!?]*(?:vacation|holiday|trip|travel)[^.!?]*)/gi, type: 'task' },
+                { regex: /([^.!?]*(?:shopping|grocery|store|market)[^.!?]*)/gi, type: 'task' },
+                { regex: /([^.!?]*(?:submit|send|deliver|finish|complete)[^.!?]*)/gi, type: 'task' },
+                
+                // Catch-all pattern for sentences with date/time indicators
+                { regex: /([^.!?]*(?:tomorrow|today|tonight|next|this|in\s+\d+\s+(?:days|weeks|months)|by\s+(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday))[^.!?]*)/gi, type: 'task' }
+            ];
+
+            patterns.forEach(({ regex, type }) => {
+                let match;
+                regex.lastIndex = 0;
+                while ((match = regex.exec(text)) !== null) {
+                    const content = match[1].trim();
+                    
+                    // Skip if content is too short or just a date
+                    if (content.length < 5 || /^(tomorrow|today|tonight|next|this|in|by)$/i.test(content)) {
+                        continue;
+                    }
+                    
+                    // Extract date from the content
+                    const dateExtraction = extractDateFromText(content);
+                    
+                    // Detect priority and category
+                    const priority = detectPriority(content);
+                    const category = detectCategory(content);
+                    
+                    extractedItems.push({
+                        title: content,
+                        description: content,
+                        type: type,
+                        due_date: dateExtraction.date,
+                        time: dateExtraction.time,
+                        priority: priority,
+                        category: category,
+                        people_involved: [],
+                        context: text
+                    });
+                }
+            });
+
+            return {
+                summary: extractedItems.length > 0
+                    ? `Extracted ${extractedItems.length} task(s) from text`
+                    : 'No tasks found in text',
+                items: extractedItems,
+                tags: [],
+                sentiment: 'neutral'
+            };
+        }
+
+        function extractTasks() {
+            const input = document.getElementById('textInput').value.trim();
+            
+            if (!input) {
+                showNotification('Please enter some text to extract tasks from', 'error');
+                return;
+            }
+            
+            totalTests++;
+            
+            const extracted = extractTasksFromText(input);
+            
+            if (extracted.items.length > 0) {
+                successfulExtractions++;
+            }
+            
+            displayResults(extracted, input);
+        }
+
+        function loadExample(text) {
+            document.getElementById('textInput').value = text;
+            const extracted = extractTasksFromText(text);
+            displayResults(extracted, text);
+        }
+
+        function loadRandomExample() {
+            const examples = [
+                "Urgent call Mom tomorrow at 5pm",
+                "Meeting next Friday at 2pm with the team",
+                "Doctor appointment tonight at 7pm",
+                "Grocery shopping this Saturday morning",
+                "Study for exam next week",
+                "Family dinner on Sunday",
+                "Critical project deadline tomorrow",
+                "Buy groceries sometime this week",
+                "Team lunch this Tuesday at 1pm",
+                "Dentist appointment in 1 month at 3pm",
+                "Call friend for coffee later",
+                "Work presentation Monday at 10am",
+                "Emergency dentist appointment tomorrow",
+                "Submit report by Friday at 4pm",
+                "Gym workout tomorrow morning",
+                "Client meeting next Wednesday at 3pm"
+            ];
+            const randomExample = examples[Math.floor(Math.random() * examples.length)];
+            loadExample(randomExample);
+        }
+
+        function loadAndDisplaySavedTasks() {
+            const savedTasks = loadTasksFromBrowser();
+            
+            if (savedTasks && savedTasks.length > 0) {
+                const extracted = {
+                    summary: `Loaded ${savedTasks.length} saved task(s)`,
+                    items: savedTasks,
+                    tags: [],
+                    sentiment: 'neutral'
+                };
+                
+                displayResults(extracted, 'Loaded from browser storage');
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('textInput').value = '';
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('stats').style.display = 'none';
+        }
+
+        // Store current extracted tasks globally for editing
+        let currentTasks = [];
+
+        function editTask(index) {
+            const task = currentTasks[index];
+            if (!task) return;
+            
+            const taskElement = document.getElementById('task-' + index);
+            const currentTitle = task.title;
+            
+            // Create input field
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentTitle;
+            input.style.cssText = `
+                width: 100%;
+                padding: 8px;
+                border: 2px solid #007bff;
+                border-radius: 4px;
+                font-size: 14px;
+                font-family: inherit;
+                background: white;
+            `;
+            
+            // Replace title with input
+            taskElement.innerHTML = '';
+            taskElement.appendChild(input);
+            input.focus();
+            input.select();
+            
+            // Save on Enter or blur
+            const saveTask = () => {
+                const newTitle = input.value.trim();
+                if (newTitle && newTitle !== currentTitle) {
+                    currentTasks[index].title = newTitle;
+                    showNotification('Task updated!', 'success');
+                    refreshTaskDisplay();
+                } else {
+                    // Restore original if no change
+                    refreshTaskDisplay();
+                }
+            };
+            
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveTask();
+                } else if (e.key === 'Escape') {
+                    refreshTaskDisplay();
+                }
+            });
+            
+            input.addEventListener('blur', saveTask);
+        }
+
+        function refreshTaskDisplay() {
+            if (!currentTasks || currentTasks.length === 0) return;
+            
+            const extracted = {
+                summary: `Updated ${currentTasks.length} task(s)`,
+                items: currentTasks,
+                tags: [],
+                sentiment: 'neutral'
+            };
+            
+            displayResults(extracted, document.getElementById('textInput').value);
+        }
+
+        function displayResults(extracted, input) {
+            const resultDiv = document.getElementById('result');
+            const statsDiv = document.getElementById('stats');
+            
+            // Store current tasks for editing
+            currentTasks = extracted.items;
+            
+            let html = '<div class="result">';
+            html += '<h3>Extraction Results:</h3>';
+            html += '<p><strong>Input:</strong> ' + input + '</p>';
+            html += '<p><strong>Summary:</strong> ' + extracted.summary + '</p>';
+            
+            if (extracted.items.length > 0) {
+                html += '<h4>Extracted Tasks:</h4>';
+                const taskTypes = new Set();
+                const tasksWithDates = extracted.items.filter(item => item.due_date).length;
+                
+                extracted.items.forEach((item, index) => {
+                    taskTypes.add(item.type);
+                    const priorityInfo = getPriorityInfo(item.priority);
+                    const categoryInfo = getCategoryInfo(item.category);
+                    
+                    html += '<div class="task-item" id="task-' + index + '">';
+                    html += '<div class="task-title" onclick="editTask(' + index + ')" style="cursor: pointer; padding: 8px; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background=\'#f0f0f0\'" onmouseout="this.style.background=\'transparent\'">Task ' + (index + 1) + ': ' + item.title + ' ✏️</div>';
+                    
+                    // Priority and Category badges
+                    html += '<div style="display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap;">';
+                    html += '<div class="task-type" style="background: ' + priorityInfo.bgColor + '; color: ' + priorityInfo.color + '; border: 1px solid ' + priorityInfo.color + ';">' + priorityInfo.icon + ' ' + priorityInfo.label + ' Priority</div>';
+                    html += '<div class="task-type" style="background: ' + categoryInfo.bgColor + '; color: ' + categoryInfo.color + '; border: 1px solid ' + categoryInfo.color + ';">' + categoryInfo.icon + ' ' + categoryInfo.label + '</div>';
+                    html += '<div class="task-type">' + item.type + '</div>';
+                    html += '</div>';
+                    
+                    if (item.due_date) {
+                        const dateObj = new Date(item.due_date);
+                        const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                        
+                        if (item.time) {
+                            const timeStr = item.time;
+                            const [hours, minutes] = timeStr.split(':');
+                            const timeObj = new Date();
+                            timeObj.setHours(parseInt(hours), parseInt(minutes));
+                            const formattedTime = timeObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                            html += '<div class="task-date">Due: ' + dateStr + ' at ' + formattedTime + '</div>';
+                        } else {
+                            html += '<div class="task-date">Due: ' + dateStr + '</div>';
+                        }
+                    } else {
+                        html += '<div class="task-date">No due date specified</div>';
+                    }
+                    html += '</div>';
+                });
+                
+                html += '<div class="success">Tasks extracted successfully! These would be saved to your VoxValt task manager.</div>';
+                
+                // Export buttons
+                html += '<div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">';
+                html += '<h4 style="margin: 0 0 10px 0; color: #333; font-size: 14px;">💾 Save & Export Options:</h4>';
+                html += '<div style="display: flex; gap: 8px; flex-wrap: wrap;">';
+                html += '<button onclick="copyTasksToClipboard(' + JSON.stringify(extracted.items) + ')" style="padding: 8px 12px; background: #28a745; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">📋 Copy</button>';
+                html += '<button onclick="downloadTasksAsFile(' + JSON.stringify(extracted.items) + ', \'txt\')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">💾 Download TXT</button>';
+                html += '<button onclick="downloadTasksAsFile(' + JSON.stringify(extracted.items) + ', \'json\')" style="padding: 8px 12px; background: #6f42c1; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">📄 Download JSON</button>';
+                html += '<button onclick="saveTasksToBrowser(' + JSON.stringify(extracted.items) + ')" style="padding: 8px 12px; background: #17a2b8; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">💾 Save to Browser</button>';
+                html += '<button onclick="generateShareableEmail(' + JSON.stringify(extracted.items) + ')" style="padding: 8px 12px; background: #fd7e14; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">📧 Email</button>';
+                html += '</div>';
+                html += '</div>';
+                
+                // Update stats
+                document.getElementById('taskCount').textContent = extracted.items.length;
+                document.getElementById('dateCount').textContent = tasksWithDates;
+                document.getElementById('typeCount').textContent = taskTypes.size;
+                statsDiv.style.display = 'flex';
+            } else {
+                html += '<div class="error">No tasks found. Try phrases like "Call Mom tomorrow" or "Meeting next Friday at 2pm"</div>';
+                statsDiv.style.display = 'none';
+            }
+            
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+
+        // Load example on page load
+        window.onload = function() {
+            loadRandomExample();
+        };

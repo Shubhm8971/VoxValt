@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
 import { verifyAuth } from '@/lib/auth';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const user = await verifyAuth(req);
         if (!user) return new NextResponse('Unauthorized', { status: 401 });
 
-        const teamId = params.id;
+        const { id: teamId } = await params;
         const supabase = createServerClient();
 
         const { data, error } = await supabase
@@ -24,12 +24,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const user = await verifyAuth(req);
         if (!user) return new NextResponse('Unauthorized', { status: 401 });
 
-        const teamId = params.id;
+        const { id: teamId } = await params;
         const { slackTeamId } = await req.json();
         const supabase = createServerClient();
 
@@ -62,12 +62,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const user = await verifyAuth(req);
         if (!user) return new NextResponse('Unauthorized', { status: 401 });
 
-        const teamId = params.id;
+        const { id: teamId } = await params;
         const supabase = createServerClient();
 
         const { error } = await supabase

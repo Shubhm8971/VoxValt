@@ -11,7 +11,7 @@ import StatsSection from './components/StatsSection';
 import DangerZone from './components/DangerZone';
 import SettingsHeader from './components/SettingsHeader';
 import Toast from './components/Toast';
-import { CalendarSettings } from '@/app/components/CalendarSettings';
+import { IntegrationsSettings } from '@/app/components/IntegrationsSettings';
 
 // ============================================
 // Types
@@ -136,10 +136,10 @@ export default function SettingsPageClient({
             {/* Content */}
             <div className="px-4 sm:px-6 pb-12 max-w-2xl mx-auto">
                 <div className="space-y-6">
-                    {/* Calendar Integration */}
+                    {/* Integrations */}
                     <section>
                         <h2 className="text-lg font-semibold mb-3 text-vox-text">Integrations</h2>
-                        <CalendarSettings />
+                        <IntegrationsSettings />
                     </section>
 
                     {/* Profile */}

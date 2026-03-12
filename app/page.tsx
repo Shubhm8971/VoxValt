@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth-context';
 import VoiceRecorder from './components/VoiceRecorder';
 import { useTheme } from 'next-themes';
 import { Dashboard } from './components/Dashboard';
@@ -10,7 +11,8 @@ import { Dashboard } from './components/Dashboard';
 import { MemoryArchive } from './components/MemoryArchive';
 import { ExtractedTasksList } from './components/ExtractedTasksList';
 import { saveTasksToDatabase } from '@/lib/client-save';
-import { useAuth } from '@/lib/auth-context';
+import { extractDateFromText } from '@/lib/date-extractor';
+import { extractTasksFromTranscription } from '@/lib/ai-extract';
 import { useWindowSize, breakpoints } from '@/lib/use-responsive';
 import { useSWEvent } from '@/lib/use-sw-events';
 import { SW_EVENTS } from './components/ServiceWorkerInitializer';
@@ -294,6 +296,7 @@ export default function Home() {
           {activeTab === 'record' ? (
             <div className="animate-fade-in-up">
               <VoiceRecorder 
+                userId={userId}
                 onTasksExtracted={handleTasksExtracted}
                 compact={isMobile}
               />
@@ -314,30 +317,43 @@ export default function Home() {
                       defaultValue="Call Mom tomorrow at 5pm"
                     />
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         const input = document.getElementById('quickTestInput') as HTMLInputElement;
                         const testText = input.value.trim();
                         if (testText) {
                           console.log('[QUICK TEST] Processing:', testText);
-                          // Simulate extracted task
-                          const mockTask = {
-                            id: 'test-' + Date.now(),
-                            title: testText,
-                            description: testText,
-                            type: 'reminder' as const,
-                            due_date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // tomorrow
-                            people_involved: [],
-                            context: testText,
-                            user_id: userId,
-                            created_at: new Date().toISOString(),
-                            updated_at: new Date().toISOString(),
-                            status: 'pending' as const,
-                            priority: 'medium' as const,
-                            tags: [],
-                            metadata: {}
-                          };
-                          setExtractedTasks([mockTask]);
-                          console.log('[QUICK TEST] Task created:', mockTask);
+                          
+                          // Use real extraction logic
+                          const extractedResult = await extractTasksFromTranscription(testText);
+                          console.log('[QUICK TEST] Extraction result:', extractedResult);
+                          
+                          if (extractedResult.tasks.length > 0) {
+                            // Apply date extraction to each item
+                            const tasksWithDates = extractedResult.tasks.map((item: any) => {
+                              const dateExtraction = extractDateFromText(item.title);
+                              return {
+                                id: 'test-' + Date.now() + '-' + Math.random(),
+                                title: item.title,
+                                description: item.description,
+                                type: item.type as 'task' | 'reminder' | 'promise' | 'recurring',
+                                due_date: dateExtraction.date,
+                                people_involved: item.people_involved || [],
+                                context: item.context || testText,
+                                user_id: userId,
+                                created_at: new Date().toISOString(),
+                                updated_at: new Date().toISOString(),
+                                status: 'pending' as const,
+                                priority: 'medium' as const,
+                                tags: [],
+                                metadata: {}
+                              };
+                            });
+                            
+                            setExtractedTasks(tasksWithDates);
+                            console.log('[QUICK TEST] Tasks created:', tasksWithDates);
+                          } else {
+                            console.log('[QUICK TEST] No tasks extracted');
+                          }
                         }
                       }}
                       className="px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors text-sm font-medium"
