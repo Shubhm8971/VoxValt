@@ -6,6 +6,8 @@
   NODE_VERSION = "18"
   # Temporarily disable secrets scanner for deployment
   SECRETS_SCAN_ENABLED = "false"
+  # Force rebuild for API routes
+  NETLIFY_BUILD_VERSION = "2"
 
 # Handle Next.js serverless functions
 [functions]
